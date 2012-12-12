@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout
+      xmlns:android="http://schemas.android.com/apk/res/android"
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:layout_marginBottom="5dp"
+      android:layout_marginLeft="5dp"
+      android:layout_marginRight="5dp"
+      android:layout_marginTop="5dp"
+      android:padding="@dimen/border_spacing"
+      android:background="@drawable/round" >
+
+    <ImageView
+        android:id="@+id/headerImage"
+        android:contentDescription="Header Logo"
+        android:layout_width="wrap_content"
+        android:layout_height="300dp" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#43666E"
+        android:textSize="30sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:textColor="#666"
+        android:text=""
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="@string/enterPhone"
+        android:textColor="#43666E"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+      <LinearLayout
+          android:layout_width="wrap_content"
+          android:layout_height="120dp"
+          android:background="@drawable/basic_red" >
+
+          <EditText
+              android:id="@+id/phone"
+              android:layout_width="0dip"
+              android:layout_height="match_parent"
+              android:layout_weight="2"
+              android:ems="10"
+              android:inputType="phone"
+              android:maxLength="10"
+              android:background="@null"
+              android:textColor="#fff"
+              android:paddingLeft="8dp"
+              android:paddingRight="8dp"
+              android:textSize="60sp" >
+          </EditText>
+
+          <Button
+              android:id="@+id/gobutt"
+              android:layout_width="wrap_content"
+              android:layout_height="match_parent"
+              android:background="@drawable/go_button_gray"
+              android:color="#fff"
+              android:paddingLeft="30dp"
+              android:paddingRight="30dp"
+              android:text="@string/goButt"
+              android:textColor="#fff"
+              android:textSize="60sp" />
+      </LinearLayout>
+
+      <RelativeLayout
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="10dp" >
+
+          <Button
+              android:id="@+id/button2"
+              android:layout_width="@dimen/button_width"
+              android:layout_height="@dimen/button_height"
+              android:layout_centerHorizontal="true"
+              android:layout_margin="8dp"
+              android:background="@drawable/keypad_button"
+              android:text="@string/button2"
+              android:textColor="#fff"
+              android:textSize="50sp" />
+
+          <Button
+             android:id="@+id/button1"
+             android:layout_width="@dimen/button_width"
+             android:layout_height="@dimen/button_height"
+             android:layout_centerHorizontal="true"
+             android:layout_margin="8dp"
+             android:background="@drawable/keypad_button"
+             android:text="@string/button1"
+             android:textColor="#fff"
+             android:layout_toLeftOf="@id/button2"
+             android:textSize="50sp" />
+          
+          <Button
+              android:id="@+id/button3"
+              android:layout_width="@dimen/button_width"
+              android:layout_height="@dimen/button_height"
+              android:layout_centerHorizontal="true"
+              android:layout_margin="8dp"
+              android:background="@drawable/keypad_button"
+              android:text="@string/button3"
+              android:textColor="#fff"
+              android:layout_toRightOf="@id/button2"
+              android:textSize="50sp" />
+      </RelativeLayout>
+      
+      <RelativeLayout
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="10dp" >
+
+          <Button
+              android:id="@+id/button5"
+              android:layout_width="@dimen/button_width"
+              android:layout_height="@dimen/button_height"
+              android:layout_centerHorizontal="true"
+              android:background="@drawable/keypad_button"
+              android:textColor="#fff"
+              android:textSize="50sp"
+              android:layout_margin="8dp"
+              android:text="@string/button5" />
+
+          <Button
+              android:id="@+id/button4"
+              style="@android:style/TextAppearance.Large"
+              android:layout_width="@dimen/button_width"
+              android:layout_height="@dimen/button_height"
+              android:layout_centerHorizontal="true"
+              android:background="@drawable/keypad_button"
+              android:textColor="#fff"
+              android:textSize="50sp"
+              android:layout_margin="8dp"
+              android:layout_toLeftOf="@id/button5"
+              android:text="@string/button4" />
+          
+          <Button
+              android:id="@+id/button6"
+              android:layout_width="@dimen/button_width"
+              android:layout_height="@dimen/button_height"
+              android:layout_centerHorizontal="true"
+              android:background="@drawable/keypad_button"
+              android:textColor="#fff"
+              android:textSize="50sp"
+              android:layout_margin="8dp"
+              android:layout_toRightOf="@id/button5"
+              android:text="@string/button6" />
+      </RelativeLayout>
+      
+      <RelativeLayout
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="10dp" >
+
+          <Button
+              android:id="@+id/button8"
+              android:layout_width="@dimen/button_width"
+              android:layout_height="@dimen/button_height"
+              android:layout_centerHorizontal="true"
+              android:background="@drawable/keypad_button"
+              android:textColor="#fff"
+              android:textSize="50sp"
+              android:layout_margin="8dp"
+              android:text="@string/button8" />
+
+          <Button
+              android:id="@+id/button7"
+              style="@android:style/TextAppearance.Large"
+              android:layout_width="@dimen/button_width"
+              android:layout_height="@dimen/button_height"
+              android:layout_centerHorizontal="true"
+              android:background="@drawable/keypad_button"
+              android:textColor="#fff"
+              android:textSize="50sp"
+              android:layout_margin="8dp"
+              android:layout_toLeftOf="@id/button8"
+              android:text="@string/button7" />
+          
+          <Button
+              android:id="@+id/button9"
+              android:layout_width="@dimen/button_width"
+              android:layout_height="@dimen/button_height"
+              android:layout_centerHorizontal="true"
+              android:background="@drawable/keypad_button"
+              android:textColor="#fff"
+              android:textSize="50sp"
+              android:layout_margin="8dp"
+              android:layout_toRightOf="@id/button8"
+              android:text="@string/button9" />
+      </RelativeLayout>
+      
+      <RelativeLayout
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="10dp" >
+
+          <Button
+              android:id="@+id/button0"
+              android:layout_width="@dimen/button_width"
+              android:layout_height="@dimen/button_height"
+              android:layout_centerHorizontal="true"
+              android:background="@drawable/keypad_button"
+              android:textColor="#fff"
+              android:textSize="50sp"
+              android:layout_margin="8dp"
+              android:text="@string/button0" />
+
+          <ImageButton
+              android:id="@+id/button_scan"
+              android:layout_width="@dimen/button_width"
+              android:layout_height="@dimen/button_height"
+              android:layout_centerHorizontal="true"
+              android:layout_margin="8dp"
+              android:background="@drawable/keypad_button"
+              android:contentDescription="@string/scanDescription"
+              android:layout_toLeftOf="@id/button0"
+              android:src="@drawable/qr" />
+          
+          <ImageButton
+              android:id="@+id/button_back"
+              android:layout_width="@dimen/button_width"
+              android:layout_height="@dimen/button_height"
+              android:layout_centerHorizontal="true"
+              android:layout_margin="8dp"
+              android:background="@drawable/keypad_button"
+              android:contentDescription="@string/backDescription"
+              android:layout_toRightOf="@id/button0"
+              android:src="@drawable/bs" />
+      </RelativeLayout>
+
+      <TextView
+          android:id="@+id/version"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="15dp"
+          android:text="Device UUID: (null)"
+          android:textAppearance="?android:attr/textAppearanceSmall"
+          android:textColor="#7d9398" />
+      
+      <TextView
+          android:id="@+id/uuid"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:textColor="#7d9398"
+          android:text="Apple Bloom Loyalty"
+          android:textAppearance="?android:attr/textAppearanceSmall" />
+</TableLayout>

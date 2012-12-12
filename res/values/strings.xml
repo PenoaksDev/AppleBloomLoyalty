@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Apple Bloom Rewards</string>
+    <dimen name="button_width">180dp</dimen>
+    <dimen name="button_height">90dp</dimen>
+    <dimen name="border_spacing">15dp</dimen>
+    <string name="button0">0</string>
+    <string name="button1">1</string>
+    <string name="button2">2</string>
+    <string name="button3">3</string>
+    <string name="button4">4</string>
+    <string name="button5">5</string>
+    <string name="button6">6</string>
+    <string name="button7">7</string>
+    <string name="button8">8</string>
+    <string name="button9">9</string>
+    <string name="scanDescription">Scan Barcode</string>
+    <string name="backDescription">Backspace</string>
+    <string name="phoneDescription">Phone Icon</string>
+    <string name="emailDescription">Email Icon</string>
+    <string name="goButt">GO!</string>
+    <string name="enterPhone">Enter your 10-digit mobile # to claim your points:</string>
+    <string name="enterEmail">Enter your e-mail address to receive exclusive offers:</string>
+    
+    <string name="lookupUrl">http://api.applebloom.co/loyalty/lookup.json</string>
+    <string name="updateUrl">http://api.applebloom.co/loyalty/update.json</string>
+    <string name="firstRunUrl">http://api.applebloom.co/loyalty/uuid.text</string>
+    <string name="pingerUrl">http://api.applebloom.co/loyalty/polling.json</string>
+</resources>

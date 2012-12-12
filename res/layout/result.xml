@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/parent"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_marginBottom="5dp"
+    android:layout_marginLeft="5dp"
+    android:layout_marginRight="5dp"
+    android:layout_marginTop="5dp"
+    android:background="@drawable/round"
+    android:padding="@dimen/border_spacing"
+    tools:context=".lookupResult" >
+        
+	    <TextView
+	        android:id="@+id/textView1"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="Konichiwa. Bonjour. Welcome."
+	        android:textAppearance="?android:attr/textAppearanceLarge"
+	        android:textColor="#43666E"
+	        android:textSize="30sp"
+	        android:textStyle="bold" />
+	    
+	    <TextView
+	        android:id="@+id/name"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="Chiori Greene"
+	        android:textAppearance="?android:attr/textAppearanceLarge"
+	        android:textColor="#43666E"
+	        android:textSize="30sp"
+	        android:textStyle="bold" />
+	    
+	    <LinearLayout
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="25dp" >
+
+	        <LinearLayout
+	            android:layout_width="185dp"
+	            android:layout_height="140dp"
+	            android:background="@drawable/basic_green"
+	            android:orientation="vertical" >
+	            
+	            	<TextView
+				        android:id="@+id/textView1"
+				        android:layout_width="match_parent"
+				        android:layout_height="wrap_content"
+				        android:text="you've got"
+				        android:textColor="#fff"
+				        android:gravity="center"
+				        android:textSize="20sp" />
+	            
+				    <TextView
+				        android:id="@+id/bal"
+				        android:layout_width="match_parent"
+				        android:layout_height="wrap_content"
+				        android:text="bal"
+				        android:textColor="#fff"
+				        android:textSize="50sp"
+				        android:gravity="center"
+				        android:textStyle="bold" />
+				    
+				    <TextView
+				        android:id="@+id/textView1"
+				        android:layout_width="match_parent"
+				        android:layout_height="wrap_content"
+				        android:text="points"
+				        android:textColor="#fff"
+				        android:gravity="center"
+				        android:textSize="20sp" />
+	            
+	        </LinearLayout>
+
+	        <LinearLayout
+	            android:layout_width="match_parent"
+	            android:layout_height="match_parent"
+	            android:layout_marginLeft="10dp"
+	            android:orientation="vertical" >
+				    
+                <TextView
+			        android:id="@+id/title"
+			        android:layout_width="wrap_content"
+			        android:layout_height="wrap_content"
+			        android:text="Dunkin&apos; Donuts"
+			        android:textColor="#43666E"
+			        android:textSize="30sp"
+			        android:textStyle="bold" />
+			
+			    <TextView
+			        android:id="@+id/address1"
+			        android:layout_width="wrap_content"
+			        android:layout_height="wrap_content"
+			        android:layout_marginTop="5dp"
+			        android:text="10801 South Cicero Avenue"
+			        android:textColor="#666"
+			        android:textSize="20sp" />
+			    
+			    <TextView
+			        android:id="@+id/address2"
+			        android:layout_width="wrap_content"
+			        android:layout_height="wrap_content"
+			        android:layout_marginTop="5dp"
+			        android:text="Oak Lawn, Illinois 60453"
+			        android:textColor="#666"
+			        android:textSize="20sp" />
+	            
+	        </LinearLayout>
+
+	    </LinearLayout>
+
+	    <TextView
+	        android:id="@+id/err"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="25dp"
+	        android:background="@drawable/basic_yellow"
+	        android:padding="15dp"
+	        android:text="Sorry, Not enough time has pasted since your last visit!"
+	        android:textColor="#fff"
+	        android:textSize="18sp"
+	        android:textStyle="bold" />
+
+	    <TextView
+	        android:id="@+id/msg"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="25dp"
+	        android:background="@drawable/basic_green"
+	        android:padding="15dp"
+	        android:text="Congrats, You have just earned 5 points for visiting today!"
+	        android:textColor="#fff"
+	        android:textSize="18sp"
+	        android:textStyle="bold" />
+
+	    <Button
+	        android:id="@+id/back"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="20dp"
+	        android:background="@drawable/keypad_button"
+	        android:height="80dp"
+	        android:text="I&apos;m Done"
+	        android:textColor="#fff"
+	        android:textSize="20sp" />
+	    
+	    <ListView
+	        android:id="@+id/redemption"
+	        android:dividerHeight="0dp"
+	        android:divider="@null"
+	        android:listSelector="@drawable/list_item_selected"
+	        android:background="@drawable/list"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:overScrollHeader="@null"
+	        android:overScrollFooter="@null"
+	        android:headerDividersEnabled="false"
+	        android:footerDividersEnabled="false"
+	        android:scrollbars="none"
+	        android:cacheColorHint="#00000000"
+	        android:layout_marginTop="25dp" />
+
+</TableLayout>

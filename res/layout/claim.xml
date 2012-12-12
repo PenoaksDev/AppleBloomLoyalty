@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/parent"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_marginBottom="5dp"
+    android:layout_marginLeft="5dp"
+    android:layout_marginRight="5dp"
+    android:layout_marginTop="5dp"
+    android:background="@drawable/round"
+    android:orientation="vertical"
+    android:padding="@dimen/border_spacing"
+    tools:context=".ClaimReward" >
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Attention Employee!!"
+        android:textColor="#c41947"
+        android:textSize="60sp" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#999"
+        android:textSize="22sp"
+        android:text="Show this page to an employee to receive your reward." />
+    
+    <TextView
+        android:id="@+id/err"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/basic_red"
+        android:padding="15dp"
+        android:text="Sorry, We had a problem processing your request!"
+        android:textColor="#fff"
+        android:textSize="18sp"
+        android:visibility="gone"
+        android:textStyle="bold" />
+    
+    <TextView
+        android:id="@+id/phone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        android:text="Phone Number: (708) 529-6564"
+        android:textColor="#000"
+        android:textSize="26sp"
+        android:textStyle="bold" />
+        
+    <TextView
+        android:id="@+id/reward"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#000"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:text="Redeemed Reward: Ten Thousand Donuts" />
+            
+    <TextView
+        android:id="@+id/points"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#000"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:text="Remaining Points: You own us 10000000 dollars." />
+
+   	<Button
+   	    android:id="@+id/finish"
+   	    android:layout_width="match_parent"
+   	    android:layout_height="wrap_content"
+   	    android:layout_marginTop="35dp"
+   	    android:background="@drawable/keypad_button"
+   	    android:height="80dp"
+   	    android:text="Click Here When Done"
+   	    android:textColor="#fff"
+   	    android:textSize="20sp" />
+    
+</LinearLayout>

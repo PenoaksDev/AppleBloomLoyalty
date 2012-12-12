@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	    <title>Network Connection PreCheck!</title>
+	
+		<script type="text/javascript" charset="utf-8" src="cordova-2.0.0.js"></script>
+		<script type="text/javascript" charset="utf-8" src="jquery-1.7.2.min.js"></script>
+	    <script type="text/javascript" charset="utf-8">
+		
+		document.addEventListener("deviceready", onDeviceReady, false);
+		
+		var pageActive = false;
+		var IntervalID;
+		
+		function onDeviceReady()
+		{
+			IntervalID = setInterval(checkConnection, 2000);
+		}
+		
+	    function checkConnection()
+	    {
+    		var networkState = navigator.network.connection.type;
+    		
+			if (networkState != Connection.NONE)
+    		{
+    			$.ajax({
+					url: 'http://panel.applebloom.co/api/status-checkup.php?deviceID=' + device.uuid,
+					success: function(result)
+					{
+						$("#status").html("Success, Internet is Active!");
+    				
+						if (!pageActive)
+		    			{
+		    				pageActive = true;
+		    				$("#web").attr("src", "http://apps.applebloom.co/rewards/launcher/index?deviceID=" + device.uuid);
+		    				$("#screen").fadeOut(1000);
+		    				$("#win").fadeIn(1000);
+		    			}
+					},
+					error: function(result)
+					{
+		    			$("#status").html("Failure, Connection is Active but No Internet!");
+		    			
+		    			if (pageActive)
+		    			{
+		    				$("#win").fadeOut(1000);
+		    				$("#screen").fadeIn(1000);
+		    				pageActive = false;
+		    			}
+					}
+				});
+    		}
+    		else
+    		{
+    			$("#status").html("Failure, No Connection Detected!");
+    			
+    			if (pageActive)
+    			{
+    				$("#win").fadeOut(1000);
+    				$("#screen").fadeIn(1000);
+    				pageActive = false;
+    			}
+    		}
+	    }
+	    
+    	</script>
+    	<style>
+    		html
+    		{
+    			overflow:			hidden;
+    		}
+    	
+    		body
+    		{
+    			background:			#000;
+    			color:				#fff;
+    			margin:				0;
+    			padding:			0;
+    			overflow:			hidden;
+    		}
+    		
+    		.screen
+    		{
+    			margin:				0;
+    			padding:			0;
+    			width:				100%;
+    			position:			absolute;
+    			top:				0;
+    			left:				0;
+    		}
+    		
+    		#blinds
+    		{
+    			padding-top:		50px;
+    		}
+    		
+    		#web
+    		{
+    			margin:				0;
+    			padding:			0;
+    			width:				100%;
+    			height:				100%;
+    			border:				0;
+    		}
+		</style>
+	</head>
+	<body>
+		<div class="screen" id="blinds">
+			<center>
+				<img src="logo.png" alt="Logo" style="width: 250px;" /><br />
+				<h1>Apple Bloom Company</h1>
+				<img src="ajax-loader.gif" alt="Loading" />
+				<h1>Searching for Internet Connection</h1>
+				<h2><span id="status"></span></h2>
+				<br /><br />
+				<p>If you see this screen for more then 10 minutes, you may contact Greenetree LLC for help.</p>
+			</center>
+		</div>
+	
+		<div class="screen" id="win">
+			<iframe id="web" />
+		</div>
+	</body>
+</html>

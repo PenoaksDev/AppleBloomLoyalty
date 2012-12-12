@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_marginBottom="5dp"
+    android:layout_marginLeft="5dp"
+    android:layout_marginRight="5dp"
+    android:layout_marginTop="5dp"
+    android:background="@drawable/round"
+    android:padding="@dimen/border_spacing"
+    tools:context=".ErrorActivity" >
+
+	<TextView
+	    android:id="@+id/errorMessage"
+	    android:layout_width="0dip"
+	    android:layout_height="100dp"
+	    android:layout_margin="8dp"
+	    android:text="There was an error!"
+	    android:textAppearance="?android:attr/textAppearanceLarge"
+	    android:textColor="#000"
+	    android:textStyle="bold" />
+	
+	<Button
+	    android:id="@+id/back"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_margin="8dp"
+	    android:layout_marginTop="10dp"
+	    android:background="@drawable/keypad_button"
+	    android:height="80dp"
+	    android:text="Okie! Dokie! Lokie!"
+	    android:textColor="#fff"
+	    android:textSize="20sp" />
+    
+</TableLayout>

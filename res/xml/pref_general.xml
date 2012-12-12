@@ -1,0 +1,14 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+   <EditTextPreference
+        android:defaultValue=""
+        android:key="uuid"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Device UUID" />
+    
+    <Preference android:title="System Settings" >
+        <intent android:action="android.settings.WIFI_SETTINGS" />
+    </Preference>
+
+</PreferenceScreen>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout
+      xmlns:android="http://schemas.android.com/apk/res/android"
+      android:id="@+id/parent"
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:layout_marginBottom="5dp"
+      android:layout_marginLeft="5dp"
+      android:layout_marginRight="5dp"
+      android:layout_marginTop="5dp"
+      android:padding="@dimen/border_spacing"
+      android:background="@drawable/round" >
+
+    	    <TextView
+	        android:id="@+id/textView1"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="Konichiwa. Bonjour. Welcome."
+	        android:textColor="#43666E"
+	        android:textSize="30sp"
+	        android:textStyle="bold" />
+	    
+	    <TextView
+	        android:id="@+id/name"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="Chiori Greene"
+	        android:textColor="#43666E"
+	        android:textSize="30sp"
+	        android:textStyle="bold" />
+	    
+	        <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="@string/enterEmail"
+        android:textColor="#43666E"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+	    
+	    <LinearLayout
+          android:layout_width="wrap_content"
+          android:layout_height="80dp"
+          android:background="@drawable/new_button_blue" >
+
+          <ImageView
+              android:id="@+id/imageView1"
+              android:layout_width="80dp"
+              android:layout_height="match_parent"
+              android:background="#000"
+              android:padding="5dp"
+              android:contentDescription="@string/emailDescription"
+              android:src="@drawable/email" />
+
+          <EditText
+              android:id="@+id/email"
+              android:layout_width="0dip"
+              android:layout_height="match_parent"
+              android:layout_weight="2"
+              android:ems="10"
+              android:inputType="textEmailAddress"
+              android:maxLength="255"
+              android:background="@null"
+              android:textColor="#fff"
+              android:paddingLeft="8dp"
+              android:paddingRight="8dp"
+              android:textSize="50sp" >
+              
+	        
+          </EditText>
+      </LinearLayout>
+
+	    <TextView
+	        android:id="@+id/textView2"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="25dp"
+	        android:textColor="#43666E"
+	        android:textSize="30sp"
+	        android:text="100% Free, No Junkmail, Unsubscribe anytime. But you may skip you wish not to provide your e-mail." />
+
+      <Button
+          android:id="@+id/finish"
+          android:layout_width="match_parent"
+          android:layout_height="@dimen/button_height"
+          android:layout_marginTop="25dp"
+          android:background="@drawable/new_button_red"
+          android:text="Skip"
+          android:textColor="#fff"
+          android:textSize="24sp" />
+    
+</TableLayout>
