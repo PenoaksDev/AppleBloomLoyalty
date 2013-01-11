@@ -242,10 +242,18 @@
       </RelativeLayout>
 
       <TextView
-          android:id="@+id/version"
+          android:id="@+id/msg"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginTop="15dp"
+          android:text="Device State: (null)"
+          android:textAppearance="?android:attr/textAppearanceSmall"
+          android:textColor="#7d9398" />
+      
+      <TextView
+          android:id="@+id/version"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
           android:text="Device UUID: (null)"
           android:textAppearance="?android:attr/textAppearanceSmall"
           android:textColor="#7d9398" />

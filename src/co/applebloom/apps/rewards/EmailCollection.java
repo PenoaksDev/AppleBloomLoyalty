@@ -1,7 +1,6 @@
 package co.applebloom.apps.rewards;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -21,6 +20,7 @@ import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
+import com.chiorichan.android.JSONObj;
 import com.pushlink.android.PushLink;
 
 public class EmailCollection extends TimedActivity implements OnClickListener, OnTouchListener

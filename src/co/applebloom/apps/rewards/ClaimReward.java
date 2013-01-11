@@ -11,6 +11,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.chiorichan.android.JSONObj;
 import com.pushlink.android.PushLink;
 
 public class ClaimReward extends Activity implements OnClickListener

@@ -3,25 +3,24 @@ package co.applebloom.apps.rewards;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.pushlink.android.PushLink;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TableLayout;
 import android.widget.TextView;
+
+import com.pushlink.android.PushLink;
 
 public class FirsttimeCollection extends TimedActivity implements OnClickListener, OnTouchListener
 {

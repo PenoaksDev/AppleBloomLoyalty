@@ -13,20 +13,10 @@
     tools:context=".lookupResult" >
         
 	    <TextView
-	        android:id="@+id/textView1"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="Konichiwa. Bonjour. Welcome."
-	        android:textAppearance="?android:attr/textAppearanceLarge"
-	        android:textColor="#43666E"
-	        android:textSize="30sp"
-	        android:textStyle="bold" />
-	    
-	    <TextView
 	        android:id="@+id/name"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:text="Chiori Greene"
+	        android:text="Welcome, Chiori Greene"
 	        android:textAppearance="?android:attr/textAppearanceLarge"
 	        android:textColor="#43666E"
 	        android:textSize="30sp"

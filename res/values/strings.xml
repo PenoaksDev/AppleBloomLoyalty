@@ -26,4 +26,8 @@
     <string name="updateUrl">http://api.applebloom.co/loyalty/update.json</string>
     <string name="firstRunUrl">http://api.applebloom.co/loyalty/uuid.text</string>
     <string name="pingerUrl">http://api.applebloom.co/loyalty/polling.json</string>
+    
+    <string name="syncUrl">http://api.applebloom.co/loyalty/sync.json</string>
+    <string name="downloadUrl">http://api.applebloom.co/loyalty/download.json</string>
+    <string name="downloadRedeemablesUrl">http://api.applebloom.co/loyalty/redemption.json</string>
 </resources>

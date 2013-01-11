@@ -1,6 +1,5 @@
 package co.applebloom.apps.rewards;
 
-import com.pushlink.android.PushLink;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,6 +15,9 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.Window;
 import android.view.WindowManager;
+
+import com.chiorichan.android.JSONObj;
+import com.pushlink.android.PushLink;
 
 public class ProcessingActivity extends Activity implements OnClickListener, OnLongClickListener
 {
@@ -49,8 +51,8 @@ public class ProcessingActivity extends Activity implements OnClickListener, OnL
         
 		setContentView(R.layout.processing);
 		
-        if ( LookupResultActivity.instance != null )
-        	LookupResultActivity.instance.finish();
+        if ( DoneActivity.instance != null )
+        	DoneActivity.instance.finish();
         
         me = this;
 		res = getResources();
@@ -227,7 +229,7 @@ public class ProcessingActivity extends Activity implements OnClickListener, OnL
 						JSONObj update = JSONObj.getFromUrlSafe( res.getString( R.string.updateUrl ) + "?acct=" + mobile_no + "&email=" + emailResult + "&texting=" + firstResult );
 					}
 					
-					Intent intent = new Intent(me, LookupResultActivity.class);
+					Intent intent = new Intent(me, DoneActivity.class);
 					intent.putExtra("", json.toString());
 					startActivityForResult(intent, SHOW_RESULTS);
 					overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);

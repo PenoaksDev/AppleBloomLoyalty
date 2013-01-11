@@ -32,6 +32,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.chiorichan.android.HTTPParser;
+import com.chiorichan.android.JSONObj;
 import com.pushlink.android.PushLink;
 
 public class MainActivity extends Activity
@@ -524,7 +526,7 @@ public class MainActivity extends Activity
     						JSONObj update = JSONObj.getFromUrlSafe( res.getString( R.string.updateUrl ) + "?acct=" + json.getStringSafe("rawNumber") + "&email=" + emailResult + "&texting=" + firstResult );
     					}
     					
-    					Intent intent = new Intent( instance, LookupResultActivity.class );
+    					Intent intent = new Intent( instance, DoneActivity.class );
     					intent.putExtra( "json", json.toString() );
     					startActivityForResult(intent, REQUEST_FINISH );
     					

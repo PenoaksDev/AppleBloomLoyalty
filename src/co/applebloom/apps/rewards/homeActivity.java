@@ -18,6 +18,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.chiorichan.android.JSONObj;
 import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 import com.pushlink.android.PushLink;
 

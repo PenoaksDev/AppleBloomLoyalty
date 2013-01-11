@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="co.applebloom.apps.rewards"
     android:versionCode="1"
-    android:versionName="2.3.1206 (Derpy Hooves)" >
+    android:versionName="2.4.0110 (Derpy Hooves)" >
 
     <supports-screens
         android:anyDensity="true"
@@ -47,7 +47,7 @@
         android:allowBackup="true"
         android:label="@string/app_name" >
         <activity
-            android:name="co.applebloom.apps.rewards.MainActivity"
+            android:name="co.applebloom.apps.rewards.LaunchActivity"
             android:clearTaskOnLaunch="true"
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/app_name"
@@ -62,15 +62,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="co.applebloom.apps.rewards.homeActivity"
+            android:name="co.applebloom.apps.rewards.DoneActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:alwaysRetainTaskState="true"
             android:windowSoftInputMode="stateAlwaysHidden" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.applebloom.apps.rewards.mainActivity" />
+                android:value="co.applebloom.apps.rewards.LaunchActivity" />
         </activity>
         <activity
             android:name="co.applebloom.apps.rewards.ErrorActivity"
@@ -80,27 +79,7 @@
             android:windowSoftInputMode="stateAlwaysHidden" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.applebloom.apps.rewards.mainActivity" />
-        </activity>
-        <activity
-            android:name="co.applebloom.apps.rewards.LookupResultActivity"
-            android:configChanges="orientation|keyboardHidden"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateAlwaysHidden" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.applebloom.apps.rewards.mainActivity" />
-        </activity>
-        <activity
-            android:name="co.applebloom.apps.rewards.ProcessingActivity"
-            android:configChanges="orientation|keyboardHidden"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateAlwaysHidden" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.applebloom.apps.rewards.mainActivity" />
+                android:value="co.applebloom.apps.rewards.LaunchActivity" />
         </activity>
         <activity
             android:name="co.applebloom.apps.rewards.EmailCollection"
@@ -108,7 +87,7 @@
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.applebloom.apps.rewards.mainActivity" />
+                android:value="co.applebloom.apps.rewards.LaunchActivity" />
         </activity>
         <activity
             android:name="co.applebloom.apps.rewards.FirsttimeCollection"
@@ -117,17 +96,7 @@
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.applebloom.apps.rewards.mainActivity" />
-        </activity>
-        <activity
-            android:name="co.applebloom.apps.rewards.UnavailableActivity"
-            android:configChanges="orientation|keyboardHidden"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateAlwaysHidden" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.applebloom.apps.rewards.mainActivity" />
+                android:value="co.applebloom.apps.rewards.LaunchActivity" />
         </activity>
         <activity
             android:name="co.applebloom.apps.rewards.ClaimReward"
@@ -137,7 +106,7 @@
             android:windowSoftInputMode="stateAlwaysHidden" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.applebloom.apps.rewards.mainActivity" />
+                android:value="co.applebloom.apps.rewards.LaunchActivity" />
         </activity>
         <activity
             android:name="co.applebloom.apps.scanner.ScannerActivity"
@@ -147,7 +116,6 @@
             android:windowSoftInputMode="stateAlwaysHidden" >
             <intent-filter>
                 <action android:name="co.applebloom.apps.scanner.SCAN" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
