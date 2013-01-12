@@ -69,6 +69,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	private static Resources res;
 	private static LaunchActivity instance;
 	public static String uuid = null;
+	public static final int REQUEST_SCAN = 10000006;
 	
 	public static MyLittleDB myLittleDB = null;
 	public static JSONObj myLittleJSON = null;
@@ -97,7 +98,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	{
 		res = this.getResources();
 		context = this.getApplicationContext();
-		instance = this;
+		setInstance(this);
         super.onCreate(savedInstanceState);
         
         myLittleDB = new MyLittleDB(context);
@@ -113,7 +114,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
         
 		localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
 		
-		sharedPrefs = instance.getSharedPreferences("AppleBloomRewards", 0);
+		sharedPrefs = getInstance().getSharedPreferences("AppleBloomRewards", 0);
 		
         setContentView(R.layout.home);
         
@@ -264,7 +265,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			if ( haveNetworkConnection() )
 				myLittleJSON = values[0];
 
-			instance.updateUI();
+			getInstance().updateUI();
         }
 		
 		@Override
@@ -283,7 +284,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 					
 					if ( uuid_ == null )
 					{
-						String seed = Settings.Secure.getString(instance.getContentResolver(), "android_id");
+						String seed = Settings.Secure.getString(getInstance().getContentResolver(), "android_id");
 						
 						if ( seed == null )
 			    			seed = UUID.randomUUID().toString();
@@ -529,13 +530,18 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			try {
 			j = JSONObj.emptyObj();
 			
+			Cursor cursor1 = db.query("users", null, "`id` = '" + id + "'", null, null, null, null);
+			cursor1.moveToFirst();
+			
 			j.put("id", id );
 			j.put("time", time );
 			j.put("n", n );
 			j.put("p", p );
 			j.put("action", action );
 			j.put("comment", comment );
-			//j.put("secure", MD5Checksum.get( id + time ));
+			
+			j.put("email", cursor1.getString(2) );
+			j.put("first_added", cursor1.getString(3) );
 			
 			trans.put( j );
 			
@@ -547,10 +553,10 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		db.close();
 		
 		db = myLittleDB.getWritableDatabase();
-		db.execSQL("DELETE FROM `trans`;");
-		db.execSQL("VACUUM;");
+		//db.execSQL("DELETE FROM `trans`;");
+		//db.execSQL("VACUUM;");
 		db.close();
-		LaunchActivity.syncDB = false;
+		//LaunchActivity.syncDB = false;
 		
 		return true;
 	}
@@ -588,7 +594,10 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		}
 		else if ( scan == v )
 		{
-			// Scan Barcode
+			Intent intent = new Intent( getIntent().getAction() );
+	        intent.putExtra("ACTION", "scan");
+			setResult(Activity.RESULT_OK, intent);
+			finish();
 		}
 		else if ( back == v )
 		{
@@ -608,7 +617,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			    	.setPositiveButton("Ok", null)
 			    	.show();
 				}
-				else if ( result.equalsIgnoreCase("success") )
+				else if ( result.equalsIgnoreCase("success") || result.equalsIgnoreCase("firstTime") )
 				{
 					phone.setText("");
 				}
@@ -632,7 +641,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		testLength();
 	}
 	
-	public boolean isNumeric ( String value )
+	public static boolean isNumeric ( String value )
 	{
 		try
 		{
@@ -674,8 +683,6 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		String err = "Sorry, Not enough time has pasted since your last visit!";
 		String msg = "Congrats, You have hust earned 5 points for visiting today!";
 		
-		Boolean firstTime = false;
-		
 		if ( cursor.getCount() > 0 )
 		{
 			cursor.moveToFirst();
@@ -701,6 +708,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		}
 		else
 		{
+			/*
 			name = formatPhoneNumber( phoneNumber );
 			
 			ContentValues insert = new ContentValues();
@@ -714,7 +722,12 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			db.close();
 			
 			err = null;
-			firstTime = true;
+			*/
+			
+			Intent intent = new Intent(getApplicationContext(), FirstTimeActivity.class);
+			intent.putExtra("com.applebloom.apps.phoneNumber", phoneNumber);
+			startActivity(intent);
+			return "firstTime";
 		}
 		
 		Intent intent = new Intent(getApplicationContext(), DoneActivity.class);
@@ -747,7 +760,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		return "success";
 	}
 	
-	public String formatPhoneNumber ( String rawPhoneNumber )
+	public static String formatPhoneNumber ( String rawPhoneNumber )
 	{
 		PhoneNumberUtil putil = PhoneNumberUtil.getInstance();
 		try
@@ -902,7 +915,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
         boolean haveConnectedMobile = false;
         boolean haveConnectedEthernet = false;
 
-        ConnectivityManager cm = (ConnectivityManager) instance.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) getInstance().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo[] netInfo = cm.getAllNetworkInfo();
         for (NetworkInfo ni : netInfo) {
             if (ni.getTypeName().equalsIgnoreCase("WIFI"))
@@ -920,5 +933,48 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
         }
         
         return haveConnectedWifi || haveConnectedMobile || haveConnectedEthernet;
+    }
+
+	public static LaunchActivity getInstance()
+	{
+		return instance;
+	}
+
+	private static void setInstance(LaunchActivity instance)
+	{
+		LaunchActivity.instance = instance;
+	}
+	
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent)
+    {
+    	if ( requestCode == REQUEST_SCAN )
+    	{
+    		if (resultCode == Activity.RESULT_OK)
+    		{
+    			String result = intent.getStringExtra("SCAN_RESULT");
+    			
+    			if ( result.substring( result.length() - 6 ).toLowerCase().equals("cg092m") || result.substring( result.length() - 6 ).toLowerCase().equals("aa126k") )
+    			{
+    				//Open Settings
+    				//Intent intent1 = new Intent( android.provider.Settings.ACTION_SETTINGS);
+                	//startActivity(intent1);
+    			}
+    			else
+    			{
+    				processNumber( result );
+    			}
+                
+                Log.d(TAG, "Barcode scan succeded with Value \"" + intent.getStringExtra("SCAN_RESULT") + "\".");
+    		}
+    		else if (resultCode == Activity.RESULT_CANCELED) 
+    		{
+                Log.d(TAG, "Barcode scan has been canceled.");
+    		}
+    		else
+    		{
+    			Log.d(TAG, "Barcode scan failed to return data for an unknown reason. Check logs.");
+    		}
+    	}
     }
 }

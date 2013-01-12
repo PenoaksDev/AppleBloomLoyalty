@@ -13,23 +13,65 @@
     tools:context=".FirsttimeCollection" >
 
     <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Konichiwa. Bonjour. Welcome."
-        android:textColor="#43666E"
-        android:textSize="30sp"
-        android:textStyle="bold" />
-
-    <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Chiori Greene"
+        android:text="Welcome, Chiori Greene"
         android:textColor="#43666E"
         android:textSize="30sp"
         android:textStyle="bold" />
 
+	        <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="@string/enterEmail"
+        android:textColor="#43666E"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+	    
+	    <LinearLayout
+          android:layout_width="wrap_content"
+          android:layout_height="80dp"
+          android:background="@drawable/new_button_blue" >
+
+          <ImageView
+              android:id="@+id/imageView1"
+              android:layout_width="80dp"
+              android:layout_height="match_parent"
+              android:background="#000"
+              android:padding="5dp"
+              android:contentDescription="@string/emailDescription"
+              android:src="@drawable/email" />
+
+          <EditText
+              android:id="@+id/email"
+              android:layout_width="0dip"
+              android:layout_height="match_parent"
+              android:layout_weight="2"
+              android:ems="10"
+              android:inputType="textEmailAddress"
+              android:maxLength="255"
+              android:background="@null"
+              android:textColor="#fff"
+              android:paddingLeft="8dp"
+              android:paddingRight="8dp"
+              android:textSize="50sp" >
+              
+	        
+          </EditText>
+      </LinearLayout>
+
+	    <TextView
+	        android:id="@+id/textView2"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="25dp"
+	        android:textColor="#43666E"
+	        android:textSize="30sp"
+	        android:text="100% Free, No Junkmail, Unsubscribe anytime." />
+    
     <CheckBox
         android:id="@+id/text"
         android:layout_width="wrap_content"
