@@ -1,12 +1,13 @@
 package co.applebloom.apps.rewards;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -28,6 +29,7 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 public class FirstTimeActivity extends TimedActivity implements OnClickListener, OnTouchListener
 {
+	private static final int TYPE_TEXT_VARIATION_EMAIL_ADDRESS = 0x0000020;
 	private Button finish;
 	private Button cancel;
 	private String phoneNumber;
@@ -66,6 +68,27 @@ public class FirstTimeActivity extends TimedActivity implements OnClickListener,
         nameLabel.setText( "Welcome, " + name );
         
         startIdleTimer();
+        
+        EditText email = (EditText) findViewById(R.id.email);
+        email.setInputType( TYPE_TEXT_VARIATION_EMAIL_ADDRESS );
+        email.addTextChangedListener(new TextWatcher()
+        {
+            public void afterTextChanged(Editable s)
+            {
+            	onTouch();
+            	
+            	if ( s.length() > 0 )
+            	{
+            		finish.setText("Continue");
+            	}
+            	else
+            	{
+            		finish.setText("Skip E-Mail");
+            	}
+            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after){}
+            public void onTextChanged(CharSequence s, int start, int before, int count){}
+        }); 
 	}
 	
 	public String formatPhoneNumber ( String rawPhoneNumber )

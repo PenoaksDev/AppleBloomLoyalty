@@ -10,9 +10,8 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
-import co.applebloom.apps.rewards.MainActivity;
-
 import android.util.Log;
+import co.applebloom.apps.rewards.LaunchActivity;
 
 public class HTTPParser
 {
@@ -54,7 +53,7 @@ public class HTTPParser
 						if ( !arguments.isEmpty() )
 							arguments += "&";
 						
-						arguments += "uuid=" + MainActivity.uuid;
+						arguments += "uuid=" + LaunchActivity.uuid;
 						
 						Log.v(TAG, "Getting DATA from URL \"" + httpURL + "\" with params \"" + arguments + "\"");
 						

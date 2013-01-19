@@ -179,16 +179,15 @@ public class DoneActivity extends TimedActivity implements OnClickListener, OnTo
             	
             	if ( button.equals("Redeem This") )
             	{
-            		new AlertDialog.Builder(LaunchActivity.getAppContext())
+            		onTouch();
+            		
+            		new AlertDialog.Builder( DoneActivity.this )
                     .setMessage("Are you sure you want to redeem this reward?\nOnce you do, the points will be deducted and a employeee will need to be notifieed ASAP.")
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
                         	String redeemID = ((TextView) view.findViewById(R.id.redeemID)).getText().toString();
                         	
-                        	instance.onTouch();
-                        	instance.pauseIdleTimer();
-                        	
-                    		Intent in = new Intent(getApplicationContext(), ClaimReward.class);
+                    		Intent in = new Intent( LaunchActivity.getAppContext() , ClaimReward.class);
                             in.putExtra("redeemID", redeemID);
                             in.putExtra("user", phoneNumberF);
                             startActivity(in);
@@ -199,7 +198,9 @@ public class DoneActivity extends TimedActivity implements OnClickListener, OnTo
             	}
             	else
             	{
-            		new AlertDialog.Builder(LaunchActivity.getAppContext())
+            		onTouch();
+            		
+            		new AlertDialog.Builder( DoneActivity.this )
                 	.setMessage("Sorry, You don't have enough points to claim this reward.")
                 	.setPositiveButton("Ok", null)
                 	.show();
@@ -209,7 +210,12 @@ public class DoneActivity extends TimedActivity implements OnClickListener, OnTo
         
         super.startIdleTimer();
     }
-
+	
+	public void onTouch()
+	{
+		super.onTouch();
+	}
+	
 	public String formatPhoneNumber ( String rawPhoneNumber )
 	{
 		PhoneNumberUtil putil = PhoneNumberUtil.getInstance();

@@ -43,6 +43,7 @@
               android:background="#000"
               android:padding="5dp"
               android:contentDescription="@string/emailDescription"
+              android:inputType="textEmailAddress"
               android:src="@drawable/email" />
 
           <EditText
@@ -114,7 +115,7 @@
             android:layout_marginLeft="8dp"
             android:layout_weight="0.41"
             android:background="@drawable/new_button_red"
-            android:text="Next"
+            android:text="Skip E-Mail"
             android:textColor="#fff"
             android:textSize="24sp" />
 

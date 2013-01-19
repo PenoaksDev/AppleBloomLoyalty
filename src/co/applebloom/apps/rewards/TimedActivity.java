@@ -14,8 +14,8 @@ public class TimedActivity extends Activity
     private Timer mTimerSeconds;
     private int mIntIdleSeconds;
     private boolean mBoolInitialized = false;
-    private boolean mBoolRunning = false;
-    private int MAX_IDLE_TIME_SECONDS = 45;
+    private boolean mBoolRunning = true;
+    private int MAX_IDLE_TIME_SECONDS = 120;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -76,8 +76,8 @@ public class TimedActivity extends Activity
     	{
             mIntIdleSeconds++;
             
-            if ( (MAX_IDLE_TIME_SECONDS - mIntIdleSeconds) < 10 )
-            	Log.v("AppleBloomRewards", "This activity will finish in " + (MAX_IDLE_TIME_SECONDS - mIntIdleSeconds) +  " seconds.");
+            if ( (MAX_IDLE_TIME_SECONDS - mIntIdleSeconds) < 15 )
+            	Log.v("TimerActivity", "This activity will finish in " + (MAX_IDLE_TIME_SECONDS - mIntIdleSeconds) +  " seconds.");
 
             if (mIntIdleSeconds >= MAX_IDLE_TIME_SECONDS)
             {

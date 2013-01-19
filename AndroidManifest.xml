@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="co.applebloom.apps.rewards"
     android:versionCode="1"
-    android:versionName="2.4.0110 (Derpy Hooves)" >
+    android:versionName="2.4.0115 (Derpy Hooves)" >
 
     <supports-screens
         android:anyDensity="true"
@@ -10,7 +10,9 @@
         android:normalScreens="true"
         android:resizeable="true"
         android:smallScreens="true" />
-
+    
+    <permission android:name="co.applebloom.apps.rewards.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+    
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -34,20 +36,34 @@
     <uses-permission android:name="android.permission.PREVENT_POWER_KEY" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.READ_LOGS" />
-
+    <uses-permission android:name="co.applebloom.apps.rewards.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+	
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
     <uses-sdk
         android:minSdkVersion="15"
         android:targetSdkVersion="10" />
-
+    
     <application
         android:icon="@drawable/ic_launcher"
         android:allowBackup="true"
         android:label="@string/app_name" >
+        
+        <receiver
+            android:name="com.google.android.gcm.GCMBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <category android:name="co.applebloom.apps.rewards" />
+            </intent-filter>
+        </receiver>
+		<service android:name=".GCMIntentService" />
+		
         <activity
-            android:name="co.applebloom.apps.rewards.LaunchActivity"
+            android:name=".LaunchActivity"
             android:clearTaskOnLaunch="true"
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/app_name"
@@ -62,33 +78,33 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="co.applebloom.apps.rewards.DoneActivity"
+            android:name=".DoneActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.applebloom.apps.rewards.LaunchActivity" />
+                android:value=".LaunchActivity" />
         </activity>
         <activity
-            android:name="co.applebloom.apps.rewards.FirstTimeActivity"
+            android:name=".FirstTimeActivity"
             android:label="@string/app_name"
 
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.applebloom.apps.rewards.LaunchActivity" />
+                android:value=".LaunchActivity" />
         </activity>
         <activity
-            android:name="co.applebloom.apps.rewards.ClaimReward"
+            android:name=".ClaimReward"
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="co.applebloom.apps.rewards.LaunchActivity" />
+                android:value=".LaunchActivity" />
         </activity>
         <activity
             android:name="co.applebloom.apps.scanner.ScannerActivity"
