@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">Apple Bloom Rewards</string>
+
     <dimen name="button_width">180dp</dimen>
     <dimen name="button_height">90dp</dimen>
     <dimen name="border_spacing">15dp</dimen>
+
     <string name="button0">0</string>
     <string name="button1">1</string>
     <string name="button2">2</string>
@@ -21,16 +24,13 @@
     <string name="goButt">GO!</string>
     <string name="enterPhone">Enter your 10-digit mobile # to claim your points:</string>
     <string name="enterEmail">Enter your e-mail address to receive exclusive offers:</string>
-    
     <string name="lookupUrl">http://api.applebloom.co/loyalty/lookup.json</string>
     <string name="updateUrl">http://api.applebloom.co/loyalty/update.json</string>
     <string name="firstRunUrl">http://api.applebloom.co/loyalty/uuid.text</string>
     <string name="pingerUrl">http://api.applebloom.co/loyalty/polling.json</string>
-    
     <string name="syncUrl">http://api.applebloom.co/loyalty/sync.json</string>
     <string name="downloadUrl">http://api.applebloom.co/loyalty/download.json</string>
     <string name="downloadRedeemablesUrl">http://api.applebloom.co/loyalty/redemption.json</string>
-    
     <string name="error_config">Please set the %1$s constant and recompile the app.</string>
     <string name="already_registered">Device is already registered on server.</string>
     <string name="gcm_registered">From GCM: device successfully registered!</string>
@@ -44,4 +44,8 @@
     <string name="server_unregistered">From Demo Server: successfully removed device!</string>
     <string name="server_register_error">Could not register device on Demo Server after %1$d attempts.</string>
     <string name="server_unregister_error">Could not unregister device on Demo Server (%1$s).</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_admin">Administrative Tasks</string>
+
 </resources>

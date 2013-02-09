@@ -1,7 +1,7 @@
 package co.applebloom.apps.rewards;
 
-import static co.applebloom.apps.rewards.CommonUtilities.SENDER_ID;
-import static co.applebloom.apps.rewards.CommonUtilities.TAG;
+import static co.applebloom.apps.rewards.CommonUtils.SENDER_ID;
+import static co.applebloom.apps.rewards.CommonUtils.TAG;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
@@ -92,7 +92,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	public static String deviceTitle = "";
 	public static String deviceAddress1 = "";
 	public static String deviceAddress2 = "";
-	private static String deviceState = "{App Error}";
+	private static String deviceState = null;
 	public static String lastLocID = "";
 	public static String lastLocID2 = "";
 	public static SharedPreferences sharedPrefs = null;
@@ -101,15 +101,13 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	
 	private boolean continueAllowed = false;
 	
+	public static final HeartBeat myHeart = new HeartBeat();
+	public static Thread serverUtils = new ServerUtils();
+	
 	@Override
 	public void onCreate( Bundle savedInstanceState )
 	{
-		res = this.getResources();
-		context = this.getApplicationContext();
-		setInstance( this );
 		super.onCreate( savedInstanceState );
-		
-		myLittleDB = new MyLittleDB( context );
 		
 		getWindow().clearFlags( WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN );
 		
@@ -119,22 +117,13 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		
 		getWindow().addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON );
 		
-		// Register this device with the new Apple Bloom Rewards App Engine on Google
-		GCMRegistrar.checkDevice( this );
-		GCMRegistrar.checkManifest( this );
-		final String regId = GCMRegistrar.getRegistrationId( this );
+		// Initalize Internal Varables
+		setInstance( this );
+		res = this.getResources();
+		context = this.getApplicationContext();
+		myLittleDB = new MyLittleDB( context );
 		
-		if ( regId.equals( "" ) )
-		{
-			GCMRegistrar.register( this, SENDER_ID );
-		}
-		else
-		{
-			Log.v( TAG, "This device is already registered with the Apple Bloom Rewards App Engine! :)" );
-		}
-		
-		localContext.setAttribute( ClientContext.COOKIE_STORE, cookieStore );
-		sharedPrefs = getInstance().getSharedPreferences( "AppleBloomRewards", 0 );
+		serverUtils.start();
 		
 		setContentView( R.layout.home );
 		
@@ -148,12 +137,6 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		 * "New critical bugfixes are now available. Please update." ); fps.setNotNowButton( "Later" );
 		 * fps.setUpdateButton( "Update Now" ); fps.setReminderTimeInSeconds( 60 * 15 );
 		 */
-		
-		TextView version = (TextView) findViewById( R.id.version );
-		version.setText( "Apple Bloom Rewards Version " + LaunchActivity.appVersion );
-		
-		TextView uuid = (TextView) findViewById( R.id.uuid );
-		uuid.setText( "Device UUID: " + uuid );
 		
 		headerImage = (ImageView) findViewById( R.id.headerImage );
 		
@@ -208,6 +191,21 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			}
 		} );
 		
+		
+		// TEMP FIXES
+		sharedPrefs = LaunchActivity.getInstance().getSharedPreferences( "AppleBloomRewards", 0 );
+		uuid = ServerUtils.DeviceUUID;
+		
+		updateUI();
+		
+		//new ScreenReceiver();
+	}
+	
+	
+	// OLD CODE BELOW THIS.
+	
+	public void updateUI()
+	{
 		try
 		{
 			PackageInfo pInfo = getPackageManager().getPackageInfo( getPackageName(), 0 );
@@ -215,23 +213,43 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		}
 		catch ( Exception e )
 		{
-			PushLink.sendAsyncException( e );
+			ServerUtils.sendException( e );
 		}
 		
-		new ScreenReceiver();
-		// new startMonitor().execute();
-	}
-	
-	public void updateUI()
-	{
+		TextView version = (TextView) findViewById( R.id.version );
+		version.setText( "Apple Bloom Rewards Version " + LaunchActivity.appVersion );
+		
+		if ( uuid == null || uuid == "" )
+			uuid = "{Unregistered}";
+		
 		TextView uuid_tv = (TextView) findViewById( R.id.uuid );
 		uuid_tv.setText( "Device UUID: " + uuid );
+		
+		if ( deviceState == null || deviceState == "" )
+			deviceState = "This device has not been fully initalized!";
 		
 		TextView msg_tv = (TextView) findViewById( R.id.msg );
 		msg_tv.setText( "Device State: " + deviceState );
 		
+		deviceTitle = sharedPrefs.getString( "title", null );
+		deviceAddress1 = sharedPrefs.getString( "address1", "" );
+		deviceAddress2 = sharedPrefs.getString( "address2", "" );
+		deviceImg = sharedPrefs.getString( "img", deviceImg );
+		
+		if ( deviceTitle == null )
+			deviceTitle = "Apple Bloom Rewards";
+		
+		applyHeaderImage( deviceImg );
+		
+		if ( !titlev.getText().toString().equals( deviceTitle ) )
+			titlev.setText( deviceTitle );
+		
+		if ( !address.getText().toString().equals( deviceAddress1 + ", " + deviceAddress2 ) )
+			address.setText( deviceAddress1 + ", " + deviceAddress2 );
+		
+		/*
 		// Pull information from My Little JSON
-		String locID = myLittleJSON.getString( "locID", null );
+		locID = myLittleJSON.getString( "locID", null );
 		deviceImg = myLittleJSON.getString( "img", deviceImg );
 		deviceTitle = myLittleJSON.getString( "title", "" );
 		deviceAddress1 = myLittleJSON.getString( "address1", "" );
@@ -262,16 +280,8 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			deviceImg = sharedPrefs.getString( "img", deviceImg );
 		}
 		
-		// Update UI Elements
-		if ( !titlev.getText().toString().equals( deviceTitle ) )
-			titlev.setText( deviceTitle );
-		
-		if ( !address.getText().toString().equals( deviceAddress1 + ", " + deviceAddress2 ) )
-			address.setText( deviceAddress1 + ", " + deviceAddress2 );
-		
-		applyHeaderImage( deviceImg );
-		
 		lastLocID2 = locID;
+		*/
 	}
 	
 	public void applyHeaderImage( String filename )
@@ -285,175 +295,6 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			UrlImageViewHelper.setUrlDrawable( headerImage, filename );
 		
 		lastDeviceImg = filename;
-	}
-	
-	public static class startMonitor extends AsyncTask<Void, JSONObj, Void>
-	{
-		private static final int FLAG_ACTIVITY_NEW_TASK = 268435456;
-		private static long last_redeemable_download = 0;
-		
-		@Override
-		protected void onProgressUpdate( JSONObj... values )
-		{
-			if ( haveNetworkConnection() )
-				myLittleJSON = values[0];
-			
-			getInstance().updateUI();
-		}
-		
-		@Override
-		protected Void doInBackground( Void... noparams )
-		{
-			while ( true )
-			{
-				JSONObj json = null;
-				Boolean networkActive = haveNetworkConnection();
-				Boolean force_resync = false;
-				
-				if ( uuid == null || uuid.isEmpty() )
-				{
-					// SharedPreferences sharedPrefs =
-					// instance.getSharedPreferences("AppleBloomRewards", 0);
-					String uuid_ = sharedPrefs.getString( "uuid", null );
-					
-					if ( uuid_ == null )
-					{
-						String seed = Settings.Secure.getString( getInstance().getContentResolver(), "android_id" );
-						
-						if ( seed == null )
-							seed = UUID.randomUUID().toString();
-						
-						Log.v( TAG, "UUID SEED: " + seed );
-						
-						try
-						{
-							if ( networkActive )
-							{
-								uuid_ = HTTPParser.getFromUrl( res.getString( R.string.firstRunUrl ) + "?seed=" + seed );
-								
-								SharedPreferences.Editor editor = sharedPrefs.edit();
-								editor.putString( "uuid", uuid_ );
-								editor.commit();
-							}
-							else
-							{
-								uuid_ = null;
-							}
-						}
-						catch ( Exception e )
-						{
-							e.printStackTrace();
-							PushLink.sendAsyncException( e );
-						}
-					}
-					
-					if ( uuid_ != null && !uuid_.isEmpty() )
-					{
-						Log.v( TAG, "Device UUID: " + uuid_ );
-						PushLink.addMetadata( "Device UUID", uuid_ );
-						uuid = uuid_;
-					}
-				}
-				
-				if ( networkActive )
-				{
-					if ( uuid == null || uuid.isEmpty() )
-					{
-						json = JSONObj.emptyObj();
-						
-						/*
-						 * if ( homeActivity.instance != null ) { homeActivity.instance.setResult(RESULT_CANCELED);
-						 * homeActivity.instance.finish(); }
-						 */
-						
-						deviceState = "There seems to be a problem with the Devices UUID.";
-					}
-					else
-					{
-						json = JSONObj.getFromUrlSafe( res.getString( R.string.pingerUrl ) + "?state=" + deviceState + "&appVersion=" + appVersion );
-						
-						if ( json.getBooleanSafe( "success" ) )
-						{
-							Log.v( TAG, "Successfully informed Apple Bloom Servers of our status." );
-						}
-						else
-						{
-							Log.e( TAG, "Apple Bloom Servers have informed us that there was an error processing our request. See Logs." );
-						}
-						
-						if ( json.getStringSafe( "command" ).toUpperCase().equals( "ADMIN" ) )
-						{
-							Intent intent = new Intent( android.provider.Settings.ACTION_SETTINGS );
-							intent.setFlags( FLAG_ACTIVITY_NEW_TASK );
-							getAppContext().startActivity( intent );
-						}
-						else
-							if ( json.getStringSafe( "command" ).toUpperCase().equals( "RESYNC" ) )
-							{
-								force_resync = true;
-							}
-							else
-								if ( json.getStringSafe( "command" ).toUpperCase().equals( "REBOOT" ) )
-								{
-									Log.v( TAG, "Apple Bloom Servers told us to Restart." );
-									restartDevice();
-								}
-						
-						if ( json.getBooleanSafe( "response" ) )
-						{
-							if ( json.getBooleanSafe( "locationAssigned" ) )
-							{
-								deviceState = "All systems are operating within normal parameters.";
-								
-								if ( !lastLocID.equals( json.getStringSafe( "locID" ) ) )
-								{
-									// TODO: REMOVE? - Closed waiting screen is all was
-									// good.
-									/*
-									 * if ( homeActivity.instance != null ) { homeActivity.instance.setResult(RESULT_CANCELED);
-									 * homeActivity.instance.finish(); }
-									 */
-									
-									lastLocID = json.getStringSafe( "locID" );
-								}
-							}
-							else
-							{
-								deviceState = "This device has not been assigned to any locations.";
-							}
-						}
-						
-						if ( LaunchActivity.syncDB )
-							if ( LaunchActivity.sendTransactions() )
-								LaunchActivity.downloadAccounts();
-						
-						if ( last_redeemable_download < System.currentTimeMillis() - 86400000 )
-						{
-							downloadRedeemables();
-							last_redeemable_download = System.currentTimeMillis();
-						}
-						
-						if ( force_resync )
-						{
-							LaunchActivity.sendTransactions();
-							LaunchActivity.downloadAccounts();
-							downloadRedeemables();
-							last_redeemable_download = System.currentTimeMillis();
-						}
-					}
-					
-					publishProgress( json );
-				}
-				else
-				{
-					publishProgress( JSONObj.emptyObj() );
-					deviceState = "It seems the internet connection is down.";
-					Log.w( TAG, "It seems the internet connection is down and we may be unable to keep sync with the servers." );
-				}
-				
-				SystemClock.sleep( 15000 );
-			}
-		}
 	}
 	
 	public static void downloadRedeemables()

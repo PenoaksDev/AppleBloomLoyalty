@@ -1,7 +1,7 @@
 package co.applebloom.apps.rewards;
 
-import static co.applebloom.apps.rewards.CommonUtilities.SENDER_ID;
-import static co.applebloom.apps.rewards.CommonUtilities.TAG;
+import static co.applebloom.apps.rewards.CommonUtils.SENDER_ID;
+import static co.applebloom.apps.rewards.CommonUtils.TAG;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -14,43 +14,41 @@ import com.google.android.gcm.GCMRegistrar;
 
 public class GCMIntentService extends GCMBaseIntentService
 {
-	public GCMIntentService()
-	{
-		super( SENDER_ID );
-	}
-	
 	@Override
 	protected void onMessage( Context context, Intent paramIntent )
 	{
 		Log.i( TAG, "Received message" );
 		String message = getString( R.string.gcm_message );
-		CommonUtilities.displayMessage( context, message );
-		// notifies user
-		generateNotification( context, message );
+		CommonUtils.displayMessage( context, message );
+		
+		//generateNotification( context, message );
+		
+		// Process message.
 	}
 	
 	@Override
 	protected void onError( Context context, String errorId )
 	{
-		CommonUtilities.displayMessage( context, getString( R.string.gcm_error, errorId ) );
+		CommonUtils.displayMessage( context, getString( R.string.gcm_error, errorId ) );
 	}
 	
 	@Override
 	protected void onRegistered( Context context, String registrationId )
 	{
 		Log.i( TAG, "Device registered: regId = " + registrationId );
-		CommonUtilities.displayMessage( context, getString( R.string.gcm_registered ) );
-		ServerUtilities.register( context, registrationId );
+		ServerUtils.register( context, registrationId );
+		
+		LaunchActivity.uuid = registrationId;
 	}
 	
 	@Override
 	protected void onUnregistered( Context context, String registrationId )
 	{
 		Log.i( TAG, "Device unregistered" );
-		CommonUtilities.displayMessage( context, getString( R.string.gcm_unregistered ) );
+		CommonUtils.displayMessage( context, getString( R.string.gcm_unregistered ) );
 		if ( GCMRegistrar.isRegisteredOnServer( context ) )
 		{
-			ServerUtilities.unregister( context, registrationId );
+			ServerUtils.unregister( context, registrationId );
 		}
 		else
 		{
