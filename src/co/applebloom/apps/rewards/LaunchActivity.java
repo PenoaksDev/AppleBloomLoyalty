@@ -1,42 +1,24 @@
 package co.applebloom.apps.rewards;
 
-import static co.applebloom.apps.rewards.CommonUtils.SENDER_ID;
-import static co.applebloom.apps.rewards.CommonUtils.TAG;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
-import java.util.Timer;
-import java.util.UUID;
-
-import org.apache.http.client.CookieStore;
-import org.apache.http.client.protocol.ClientContext;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.PowerManager;
-import android.os.SystemClock;
-import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -50,59 +32,35 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+import co.applebloom.api.WebSocketService;
+import co.applebloom.apps.scanner.ScannerActivity;
 
-import com.chiorichan.android.HTTPParser;
-import com.chiorichan.android.JSONObj;
 import com.chiorichan.android.MyLittleDB;
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
+import com.pushlink.android.FriendlyPopUpStrategy;
 import com.pushlink.android.PushLink;
-import com.pushlink.android.strategy.FriendlyPopUpStrategy;
-import com.pushlink.android.strategy.StrategyEnum;
-
-import com.google.android.gcm.GCMRegistrar;
+import com.pushlink.android.StrategyEnum;
 
 public class LaunchActivity extends Activity implements OnClickListener, OnLongClickListener
 {
-	public CookieStore cookieStore = new BasicCookieStore();
-	public HttpContext localContext = new BasicHttpContext();
-	
-	public static String appVersion = "2.4.0115 (Derpy Hooves)";
-	private static Context context;
-	private static Resources res;
-	private static LaunchActivity instance;
-	public static String uuid = null;
-	public static final int REQUEST_SCAN = 10000006;
-	
-	public static MyLittleDB myLittleDB = null;
-	public static JSONObj myLittleJSON = null;
-	
-	private TextView phone;
-	private Button num0, num1, num2, num3, num4, num5, num6, num7, num8, num9, go;
-	private ImageButton scan, back;
-	private static TextView titlev;
-	private static TextView address;
-	private static ImageView headerImage;
-	
-	public static String deviceImg = "http://images.applebloom.co/dunkin.png";
-	public static String lastDeviceImg = "";
-	public static String deviceTitle = "";
-	public static String deviceAddress1 = "";
-	public static String deviceAddress2 = "";
-	private static String deviceState = null;
-	public static String lastLocID = "";
-	public static String lastLocID2 = "";
 	public static SharedPreferences sharedPrefs = null;
+	public static final int REQUEST_SCAN = 10000006;
+	public static MyLittleDB myLittleDB = null;
+	public static Boolean registered = false;
+	public static String appVersion = "";
+	public static Resources res;
 	
-	private static boolean syncDB = true;
-	
+	private Button go;
+	private TextView titlev, address, version, uuid, phone, deviceState;
 	private boolean continueAllowed = false;
+	private ImageButton scan, back;
+	public WebSocketService s;
 	
-	public static final HeartBeat myHeart = new HeartBeat();
-	public static Thread serverUtils = new ServerUtils();
+	private static final String TAG = "ABRewards";
+	private static LaunchActivity instance;
+	private static ImageView headerImage;
+	private static Context context;
 	
 	@Override
 	public void onCreate( Bundle savedInstanceState )
@@ -117,58 +75,29 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		
 		getWindow().addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON );
 		
-		// Initalize Internal Varables
 		setInstance( this );
 		res = this.getResources();
 		context = this.getApplicationContext();
 		myLittleDB = new MyLittleDB( context );
 		
-		serverUtils.start();
-		
 		setContentView( R.layout.home );
 		
-		/*
-		 * PushLink.start( this, 0, "3vcnlaneunf3k0k0" ); PushLink.setCurrentStrategy( StrategyEnum.FRIENDLY_POPUP );
-		 * 
-		 * PushLink.addMetadata( "App Version", appVersion ); PushLink.addMetadata( "Device UUID", uuid );
-		 * PushLink.addMetadata( "Android Version", Build.VERSION.RELEASE );
-		 * 
-		 * FriendlyPopUpStrategy fps = (FriendlyPopUpStrategy) PushLink.getCurrentStrategy(); fps.setPopUpMessage(
-		 * "New critical bugfixes are now available. Please update." ); fps.setNotNowButton( "Later" );
-		 * fps.setUpdateButton( "Update Now" ); fps.setReminderTimeInSeconds( 60 * 15 );
-		 */
+		sharedPrefs = getSharedPreferences( "AppleBloomRewards", 0 );
 		
 		headerImage = (ImageView) findViewById( R.id.headerImage );
 		
+		uuid = (TextView) findViewById( R.id.uuid );
 		address = (TextView) findViewById( R.id.address );
 		titlev = (TextView) findViewById( R.id.title );
+		version = (TextView) findViewById( R.id.version );
+		deviceState = (TextView) findViewById( R.id.msg );
 		
 		scan = (ImageButton) findViewById( R.id.button_scan );
 		back = (ImageButton) findViewById( R.id.button_back );
 		
 		phone = (TextView) findViewById( R.id.phone );
-		num0 = (Button) findViewById( R.id.button0 );
-		num1 = (Button) findViewById( R.id.button1 );
-		num2 = (Button) findViewById( R.id.button2 );
-		num3 = (Button) findViewById( R.id.button3 );
-		num4 = (Button) findViewById( R.id.button4 );
-		num5 = (Button) findViewById( R.id.button5 );
-		num6 = (Button) findViewById( R.id.button6 );
-		num7 = (Button) findViewById( R.id.button7 );
-		num8 = (Button) findViewById( R.id.button8 );
-		num9 = (Button) findViewById( R.id.button9 );
 		go = (Button) findViewById( R.id.gobutt );
 		
-		num0.setOnClickListener( this );
-		num1.setOnClickListener( this );
-		num2.setOnClickListener( this );
-		num3.setOnClickListener( this );
-		num4.setOnClickListener( this );
-		num5.setOnClickListener( this );
-		num6.setOnClickListener( this );
-		num7.setOnClickListener( this );
-		num8.setOnClickListener( this );
-		num9.setOnClickListener( this );
 		scan.setOnClickListener( this );
 		back.setOnClickListener( this );
 		back.setOnLongClickListener( this );
@@ -191,357 +120,141 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			}
 		} );
 		
-		
-		// TEMP FIXES
-		sharedPrefs = LaunchActivity.getInstance().getSharedPreferences( "AppleBloomRewards", 0 );
-		uuid = ServerUtils.DeviceUUID;
-		
-		updateUI();
-		
-		//new ScreenReceiver();
-	}
-	
-	
-	// OLD CODE BELOW THIS.
-	
-	public void updateUI()
-	{
 		try
 		{
 			PackageInfo pInfo = getPackageManager().getPackageInfo( getPackageName(), 0 );
 			appVersion = pInfo.versionName;
+			version.setText( "Apple Bloom Rewards Version " + LaunchActivity.appVersion );
 		}
 		catch ( Exception e )
 		{
-			ServerUtils.sendException( e );
+			e.printStackTrace();
+			sendException( e );
 		}
 		
-		TextView version = (TextView) findViewById( R.id.version );
-		version.setText( "Apple Bloom Rewards Version " + LaunchActivity.appVersion );
+		uuid.setText( "Device UUID: " + WebSocketService.deviceUUID );
+		deviceState.setText( "Device State: " + WebSocketService.deviceState );
 		
-		if ( uuid == null || uuid == "" )
-			uuid = "{Unregistered}";
+		applyHeaderImage( sharedPrefs.getString( "img", null ) );
+		titlev.setText( sharedPrefs.getString( "title", "Apple Bloom Rewards" ) );
+		address.setText( sharedPrefs.getString( "address1", "" ) + ", " + sharedPrefs.getString( "address2", "" ) );
 		
-		TextView uuid_tv = (TextView) findViewById( R.id.uuid );
-		uuid_tv.setText( "Device UUID: " + uuid );
+		Intent intent = new Intent(this, WebSocketService.class);
+		startService( intent );
+		bindService( intent, mConnection, Context.BIND_AUTO_CREATE );
 		
-		if ( deviceState == null || deviceState == "" )
-			deviceState = "This device has not been fully initalized!";
-		
-		TextView msg_tv = (TextView) findViewById( R.id.msg );
-		msg_tv.setText( "Device State: " + deviceState );
-		
-		deviceTitle = sharedPrefs.getString( "title", null );
-		deviceAddress1 = sharedPrefs.getString( "address1", "" );
-		deviceAddress2 = sharedPrefs.getString( "address2", "" );
-		deviceImg = sharedPrefs.getString( "img", deviceImg );
-		
-		if ( deviceTitle == null )
-			deviceTitle = "Apple Bloom Rewards";
-		
-		applyHeaderImage( deviceImg );
-		
-		if ( !titlev.getText().toString().equals( deviceTitle ) )
-			titlev.setText( deviceTitle );
-		
-		if ( !address.getText().toString().equals( deviceAddress1 + ", " + deviceAddress2 ) )
-			address.setText( deviceAddress1 + ", " + deviceAddress2 );
-		
-		/*
-		// Pull information from My Little JSON
-		locID = myLittleJSON.getString( "locID", null );
-		deviceImg = myLittleJSON.getString( "img", deviceImg );
-		deviceTitle = myLittleJSON.getString( "title", "" );
-		deviceAddress1 = myLittleJSON.getString( "address1", "" );
-		deviceAddress2 = myLittleJSON.getString( "address2", "" );
-		
-		// This would mean there are new location details.
-		if ( locID != null && !locID.equals( lastLocID2 ) )
-		{
-			SharedPreferences.Editor editor = sharedPrefs.edit();
-			
-			editor.putString( "img", deviceImg );
-			editor.putString( "title", deviceTitle );
-			editor.putString( "address1", deviceAddress1 );
-			editor.putString( "address2", deviceAddress2 );
-			editor.putString( "locID", locID );
-			
-			editor.commit();
-		}
-		
-		// Check Integrity of Data
-		if ( locID == null )
-		{
-			locID = sharedPrefs.getString( "locID", null );
-			
-			deviceTitle = sharedPrefs.getString( "title", "{Internal Application Error}" );
-			deviceAddress1 = sharedPrefs.getString( "address1", "" );
-			deviceAddress2 = sharedPrefs.getString( "address2", "" );
-			deviceImg = sharedPrefs.getString( "img", deviceImg );
-		}
-		
-		lastLocID2 = locID;
-		*/
+		new ScreenReceiver();
 	}
+	
+	/**
+	 * Send a thrown exception to the Apple Bloom Websocket
+	 * @param e
+	 */
+	public static void sendException ( Exception e )
+	{
+		getInstance().s.sendException( e );
+	}
+	
+	public static void startPushLink ( String DeviceUUID )
+	{
+		PushLink.start( getAppContext(), R.drawable.ic_launcher, "3vcnlaneunf3k0k0", DeviceUUID );
+		
+		PushLink.setCurrentStrategy( StrategyEnum.FRIENDLY_POPUP );
+		PushLink.addMetadata( "App Version", appVersion );
+		PushLink.addMetadata( "Android Version", Build.VERSION.RELEASE );
+		
+		FriendlyPopUpStrategy fps = (FriendlyPopUpStrategy) PushLink.getCurrentStrategy();
+		fps.setPopUpMessage(	"New critical bugfixes are now available. Please update." );
+		fps.setNotNowButton( "Later" );
+		fps.setUpdateButton( "Update Now" );
+		fps.setReminderTimeInSeconds( 60 * 15 );
+	}
+	
+	private ServiceConnection mConnection = new ServiceConnection()
+	{
+		public void onServiceConnected( ComponentName className, IBinder binder )
+		{
+			s = ( (WebSocketService.MyBinder) binder ).getService();
+			Toast.makeText( LaunchActivity.this, "Connected", Toast.LENGTH_SHORT ).show();
+		}
+		
+		public void onServiceDisconnected( ComponentName className )
+		{
+			s = null;
+		}
+	};
 	
 	public void applyHeaderImage( String filename )
 	{
-		// TODO: Add image cache so being offline will still load image.
+		if ( filename == null || filename == "" )
+		{
+			// It seems that no image was available. Set it do that system default.
+			headerImage.setBackgroundResource( R.drawable.default_logo );
+			return;
+		}
 		
-		if ( !lastDeviceImg.equals( filename ) )
-			UrlImageViewHelper.setUrlDrawable( headerImage, filename );
-		
-		if ( headerImage.getDrawable() == null )
-			UrlImageViewHelper.setUrlDrawable( headerImage, filename );
-		
-		lastDeviceImg = filename;
+		UrlImageViewHelper.setUrlDrawable( headerImage, filename );
 	}
 	
-	public static void downloadRedeemables()
+	public void numpadClick( View v )
 	{
-		JSONObj result = JSONObj.getFromUrlSafe( res.getString( R.string.downloadRedeemablesUrl ) );
-		
-		SQLiteDatabase db = myLittleDB.getWritableDatabase();
-		
-		try
-		{
-			db.execSQL( "DELETE FROM `redeemables`;" );
-			db.execSQL( "VACUUM;" );
-			
-			JSONArray users = result.getJSONArray( "list" );
-			
-			for ( int i = 0; i < users.length(); i++ )
-			{
-				JSONObj user = JSONObj.convertObj( users.getJSONObject( i ) );
-				
-				ContentValues insert = new ContentValues();
-				
-				insert.put( "id", user.getString( "redeemID" ) );
-				insert.put( "title", user.getString( "title" ) );
-				insert.put( "cost", user.getLong( "cost" ) );
-				
-				db.insert( "redeemables", null, insert );
-				
-				Log.d( TAG, "Inserting " + user.toString() );
-			}
-			
-		}
-		catch ( Exception e )
-		{
-			e.printStackTrace();
-			PushLink.sendAsyncException( e );
-		}
-		
-		db.close();
-	}
-	
-	public static void downloadAccounts()
-	{
-		JSONObj result = JSONObj.getFromUrlSafe( res.getString( R.string.downloadUrl ) );
-		
-		SQLiteDatabase db = myLittleDB.getWritableDatabase();
-		SQLiteDatabase dbr = myLittleDB.getReadableDatabase();
-		
-		try
-		{
-			JSONArray users = result.getJSONArray( "users" );
-			
-			for ( int i = 0; i < users.length(); i++ )
-			{
-				JSONObj user = JSONObj.convertObj( users.getJSONObject( i ) );
-				
-				// Log.d(TAG, "Adding " + user.getString("id") + " (" +
-				// user.getLong("balance") + ") to contacts.");
-				Cursor cursor = dbr.query( "users", null, "`id` = '" + user.getString( "id" ) + "'", null, null, null, null );
-				
-				if ( cursor.getCount() < 1 )
-				{
-					ContentValues insert = new ContentValues();
-					
-					insert.put( "id", user.getString( "id" ) );
-					insert.put( "name", user.getString( "name" ) );
-					insert.put( "email", user.getString( "email" ) );
-					insert.put( "first_added", user.getLong( "first_added", System.currentTimeMillis() ) );
-					insert.put( "balance", user.getInt( "balance" ) );
-					insert.put( "last_instore_check", user.getLong( "last_instore_check", 0L ) );
-					
-					db.insert( "users", null, insert );
-				}
-				else
-				{
-					ContentValues update = new ContentValues();
-					update.put( "balance", user.getInt( "balance" ) );
-					update.put( "name", user.getString( "name" ) );
-					update.put( "email", user.getString( "email" ) );
-					update.put( "last_instore_check", user.getLong( "last_instore_check" ) );
-					
-					db.update( "users", update, "`id` = '" + user.getString( "id" ) + "'", null );
-				}
-			}
-			
-		}
-		catch ( Exception e )
-		{
-			e.printStackTrace();
-			PushLink.sendAsyncException( e );
-		}
-		
-		db.close();
-		dbr.close();
-	}
-	
-	public static boolean sendTransactions()
-	{
-		SQLiteDatabase db = myLittleDB.getReadableDatabase();
-		Cursor cursor = db.query( "trans", null, null, null, null, null, null );
-		
-		if ( cursor.getCount() < 1 )
-			return false;
-		
-		JSONArray trans = new JSONArray();
-		JSONObj j = JSONObj.emptyObj();
-		
-		for ( cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext() )
-		{
-			if ( trans.toString().length() > 8000 )
-			{
-				__sendTransactions( trans.toString() );
-				trans = new JSONArray();
-			}
-			
-			String id = cursor.getString( 0 );
-			Long time = cursor.getLong( 1 );
-			int n = cursor.getInt( 2 );
-			int p = cursor.getInt( 3 );
-			String action = cursor.getString( 4 );
-			String comment = cursor.getString( 5 );
-			
-			try
-			{
-				j = JSONObj.emptyObj();
-				
-				Cursor cursor1 = db.query( "users", null, "`id` = '" + id + "'", null, null, null, null );
-				cursor1.moveToFirst();
-				
-				j.put( "id", id );
-				j.put( "time", time );
-				j.put( "n", n );
-				j.put( "p", p );
-				j.put( "action", action );
-				j.put( "comment", comment );
-				
-				j.put( "email", cursor1.getString( 2 ) );
-				j.put( "first_added", cursor1.getString( 3 ) );
-				
-				trans.put( j );
-				
-			}
-			catch ( JSONException e )
-			{
-				e.printStackTrace();
-			}
-		}
-		
-		__sendTransactions( trans.toString() );
-		
-		db.close();
-		
-		db = myLittleDB.getWritableDatabase();
-		// db.execSQL("DELETE FROM `trans`;");
-		// db.execSQL("VACUUM;");
-		db.close();
-		// LaunchActivity.syncDB = false;
-		
-		return true;
-	}
-	
-	public static void __sendTransactions( String data )
-	{
-		JSONObj result = JSONObj.getFromUrlSafe( res.getString( R.string.syncUrl ) + "?data=" + data );
-		
-		/*
-		 * SQLiteDatabase db = myLittleDB.getWritableDatabase();
-		 * 
-		 * try { JSONArray log = result.getJSONArray("log");
-		 * 
-		 * for (int i = 0; i < log.length(); i++) { Log.d(TAG, "Removing " + log.getString(i) +
-		 * " from transaction table."); //db.delete("trans", "", null); } } catch (Exception e) { e.printStackTrace();
-		 * PushLink.sendAsyncException( e ); }
-		 * 
-		 * db.close();
-		 */
+		phone.setText( phone.getText().toString() + ( (Button) v ).getText().toString() );
 	}
 	
 	public void onClick( View v )
 	{
 		String s = phone.getText().toString();
 		
-		if ( num0 == v || num1 == v || num2 == v || num3 == v || num4 == v || num5 == v || num6 == v || num7 == v || num8 == v || num9 == v )
+		if ( scan == v )
 		{
-			Button b = (Button) v;
-			phone.setText( phone.getText().toString() + b.getText().toString() );
+			Intent intent = new Intent( this, ScannerActivity.class );
+			intent.putExtra( "ACTION", "scan" );
+			setResult( Activity.RESULT_OK, intent );
 		}
-		else
-			if ( scan == v )
+		else if ( back == v )
+		{
+			if ( s.length() > 0 )
+				phone.setText( s.substring( 0, s.length() - 1 ) );
+		}
+		else if ( go == v )
+		{
+			if ( s.equalsIgnoreCase( "016564" ) )
 			{
-				/*
-				 * Intent intent = new Intent( this, ScannerActivity.class ); intent.putExtra("ACTION", "scan");
-				 * setResult(Activity.RESULT_OK, intent); finish();
-				 */
+				Intent intent = new Intent( this, AdminActivity.class );
+				startActivity( intent );
+				phone.setText( "" );
+				return;
 			}
-			else
-				if ( back == v )
+			
+			if ( continueAllowed )
+			{
+				String result = processNumber( s );
+				
+				if ( result == null )
 				{
-					if ( s.length() > 0 )
-						phone.setText( s.substring( 0, s.length() - 1 ) );
+					new AlertDialog.Builder( this ).setMessage( "Sorry, We could not process your request at this time. Please try again later." ).setPositiveButton( "Ok", null ).show();
+				}
+				else if ( result.equalsIgnoreCase( "success" ) || result.equalsIgnoreCase( "firstTime" ) )
+				{
+					phone.setText( "" );
 				}
 				else
-					if ( go == v )
-					{
-						if ( continueAllowed )
-						{
-							String result = processNumber( s );
-							
-							if ( result == null )
-							{
-								new AlertDialog.Builder( this ).setMessage( "Sorry, We could not process your request at this time. Please try again later." ).setPositiveButton( "Ok", null ).show();
-							}
-							else
-								if ( result.equalsIgnoreCase( "success" ) || result.equalsIgnoreCase( "firstTime" ) )
-								{
-									phone.setText( "" );
-								}
-								else
-								{
-									new AlertDialog.Builder( this ).setMessage( result ).setPositiveButton( "Ok", null ).show();
-								}
-						}
-						else
-						{
-							new AlertDialog.Builder( this ).setMessage( "You must enter the full 10 digit mobile #\n w/o country code (i.e. 7085296564)" ).setPositiveButton( "Ok", null ).show();
-						}
-					}
+				{
+					new AlertDialog.Builder( this ).setMessage( result ).setPositiveButton( "Ok", null ).show();
+				}
+			}
+			else
+			{
+				new AlertDialog.Builder( this ).setMessage( "You must enter the full 10 digit mobile #\n w/o country code (i.e. 7085296564)" ).setPositiveButton( "Ok", null ).show();
+			}
+		}
 		
 		testLength();
 	}
 	
-	public static boolean isNumeric( String value )
-	{
-		try
-		{
-			double dd = Double.parseDouble( value );
-		}
-		catch ( NumberFormatException nfe )
-		{
-			return false;
-		}
-		
-		return true;
-	}
-	
 	public String processNumber( String phoneNumber )
 	{
-		if ( !isNumeric( phoneNumber ) )
+		if ( !CommonUtils.isNumeric( phoneNumber ) )
 			return "It seems there is a problem with the Phone Number you provided. Try again.";
 		
 		if ( phoneNumber.startsWith( "555" ) )
@@ -551,7 +264,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			return "Sorry, The number you entered has been blacklisted.";
 		
 		if ( phoneNumber == "7085296564" )
-			return "Sorry, Being the service provider, we are exempt from using our services. So please don't use our phone number.";
+			return "Sorry, Being the service provider it would not be right of us to earn points. So please don't use our phone number.";
 		
 		// return
 		// "Sorry, The entered number did not pass our phone number validation system.";
@@ -581,7 +294,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			}
 			
 			if ( name == null || name.equals( "" ) || name.equals( "null" ) )
-				name = formatPhoneNumber( phoneNumber );
+				name = CommonUtils.formatPhoneNumber( phoneNumber );
 			
 			ContentValues update = new ContentValues();
 			update.put( "balance", balance );
@@ -591,19 +304,6 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		}
 		else
 		{
-			/*
-			 * name = formatPhoneNumber( phoneNumber );
-			 * 
-			 * ContentValues insert = new ContentValues();
-			 * 
-			 * insert.put("id", phoneNumber); insert.put("first_added", System.currentTimeMillis()); insert.put("balance",
-			 * 5); insert.put("last_instore_check", System.currentTimeMillis());
-			 * 
-			 * db.insert("users", "id", insert); db.close();
-			 * 
-			 * err = null;
-			 */
-			
 			Intent intent = new Intent( getApplicationContext(), FirstTimeActivity.class );
 			intent.putExtra( "com.applebloom.apps.phoneNumber", phoneNumber );
 			startActivity( intent );
@@ -620,7 +320,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			trans.put( "n", 0 );
 			trans.put( "p", 5 );
 			trans.put( "action", "Earned Points" );
-			trans.put( "comment", "Device Balance: " + balance );
+			trans.put( "comment", "Balance: " + balance );
 			SQLiteDatabase tdb = myLittleDB.getWritableDatabase();
 			tdb.insert( "trans", null, trans );
 			tdb.close();
@@ -634,24 +334,9 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		
 		intent.putExtra( "com.applebloom.apps.phoneNumber", phoneNumber );
 		
-		syncDB = true;
 		startActivity( intent );
 		
 		return "success";
-	}
-	
-	public static String formatPhoneNumber( String rawPhoneNumber )
-	{
-		PhoneNumberUtil putil = PhoneNumberUtil.getInstance();
-		try
-		{
-			PhoneNumber num = putil.parse( rawPhoneNumber, "US" );
-			return putil.format( num, PhoneNumberFormat.NATIONAL );
-		}
-		catch ( NumberParseException e )
-		{
-			return rawPhoneNumber;
-		}
 	}
 	
 	public void testLength()
@@ -711,114 +396,9 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		PushLink.setCurrentPopUpTarget( this );
 	}
 	
-	public static void restartDevice()
-	{
-		try
-		{
-			doCmds( "reboot" );
-		}
-		catch ( Exception e )
-		{
-			e.printStackTrace();
-			PushLink.sendAsyncException( e );
-		}
-	}
-	
 	public static Context getAppContext()
 	{
 		return context;
-	}
-	
-	public static void doCmds( String cmd ) throws Exception
-	{
-		Process process = Runtime.getRuntime().exec( "su" );
-		DataOutputStream os = new DataOutputStream( process.getOutputStream() );
-		// DataInputStream is = new DataInputStream(process.getInputStream());
-		
-		BufferedReader is = new BufferedReader( new InputStreamReader( process.getInputStream() ) );
-		
-		Log.v( TAG, "Sending Command to System" );
-		
-		/*
-		 * for (String tmpCmd : cmds) { os.writeBytes(tmpCmd+"\n"); }
-		 */
-		
-		os.writeBytes( cmd + "\n" );
-		
-		os.writeBytes( "exit\n" );
-		
-		String line;
-		while ( ( line = is.readLine() ) != null )
-		{
-			System.out.println( line );
-			Log.v( TAG, "Command Result: " + line );
-		}
-		
-		os.flush();
-		os.close();
-		is.close();
-		
-		process.waitFor();
-	}
-	
-	private class ScreenReceiver extends BroadcastReceiver
-	{
-		protected ScreenReceiver()
-		{
-			IntentFilter filter = new IntentFilter();
-			filter.addAction( Intent.ACTION_SCREEN_ON );
-			filter.addAction( Intent.ACTION_SCREEN_OFF );
-			registerReceiver( this, filter );
-		}
-		
-		@Override
-		public void onReceive( Context context, Intent intent )
-		{
-			if ( intent.getAction().equals( Intent.ACTION_SCREEN_OFF ) )
-			{
-				Log.w( TAG, "Screen has been turned off." );
-				
-				PowerManager pm = (PowerManager) getSystemService( Context.POWER_SERVICE );
-				@SuppressWarnings( "deprecation" )
-				PowerManager.WakeLock wl = pm.newWakeLock( PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "tag" );
-				wl.acquire();
-				wl.release();
-				
-			}
-			else
-				if ( intent.getAction().equals( Intent.ACTION_SCREEN_ON ) )
-				{
-					Log.w( TAG, "Screen has been turned on." );
-				}
-		}
-	}
-	
-	public static boolean haveNetworkConnection()
-	{
-		boolean haveConnectedWifi = false;
-		boolean haveConnectedMobile = false;
-		boolean haveConnectedEthernet = false;
-		
-		ConnectivityManager cm = (ConnectivityManager) getInstance().getSystemService( Context.CONNECTIVITY_SERVICE );
-		NetworkInfo[] netInfo = cm.getAllNetworkInfo();
-		for ( NetworkInfo ni : netInfo )
-		{
-			if ( ni.getTypeName().equalsIgnoreCase( "WIFI" ) )
-				if ( ni.isConnected() )
-					haveConnectedWifi = true;
-			if ( ni.getTypeName().equalsIgnoreCase( "MOBILE" ) )
-				if ( ni.isConnected() )
-					haveConnectedMobile = true;
-			if ( ni.getTypeName().equalsIgnoreCase( "ETHERNET" ) || ni.getTypeName().equalsIgnoreCase( "ETH" ) )
-				if ( ni.isConnected() )
-					haveConnectedEthernet = true;
-			
-			// if (ni.isConnected())
-			// Log.d(TAG, "We found an active internet connection using: " +
-			// ni.getTypeName());
-		}
-		
-		return haveConnectedWifi || haveConnectedMobile || haveConnectedEthernet;
 	}
 	
 	public static LaunchActivity getInstance()
@@ -854,15 +434,45 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 				
 				Log.d( TAG, "Barcode scan succeded with Value \"" + intent.getStringExtra( "SCAN_RESULT" ) + "\"." );
 			}
+			else if ( resultCode == Activity.RESULT_CANCELED )
+			{
+				Log.d( TAG, "Barcode scan has been canceled." );
+			}
 			else
-				if ( resultCode == Activity.RESULT_CANCELED )
-				{
-					Log.d( TAG, "Barcode scan has been canceled." );
-				}
-				else
-				{
-					Log.d( TAG, "Barcode scan failed to return data for an unknown reason. Check logs." );
-				}
+			{
+				Log.d( TAG, "Barcode scan failed to return data for an unknown reason. Check logs." );
+			}
+		}
+	}
+	
+	private class ScreenReceiver extends BroadcastReceiver
+	{
+		protected ScreenReceiver()
+		{
+			IntentFilter filter = new IntentFilter();
+			filter.addAction( Intent.ACTION_SCREEN_ON );
+			filter.addAction( Intent.ACTION_SCREEN_OFF );
+			registerReceiver( this, filter );
+		}
+		
+		@Override
+		public void onReceive( Context context, Intent intent )
+		{
+			if ( intent.getAction().equals( Intent.ACTION_SCREEN_OFF ) )
+			{
+				Log.w( TAG, "Screen has been turned off." );
+				
+				PowerManager pm = (PowerManager) getSystemService( Context.POWER_SERVICE );
+				@SuppressWarnings( "deprecation" )
+				PowerManager.WakeLock wl = pm.newWakeLock( PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "tag" );
+				wl.acquire();
+				wl.release();
+				
+			}
+			else if ( intent.getAction().equals( Intent.ACTION_SCREEN_ON ) )
+			{
+				Log.w( TAG, "Screen has been turned on." );
+			}
 		}
 	}
 }

@@ -53,7 +53,8 @@ public class HTTPParser
 						if ( !arguments.isEmpty() )
 							arguments += "&";
 						
-						arguments += "uuid=" + LaunchActivity.uuid;
+						// TODO: Renable.
+						//arguments += "uuid=" + LaunchActivity.uuid;
 						
 						Log.v(TAG, "Getting DATA from URL \"" + httpURL + "\" with params \"" + arguments + "\"");
 						

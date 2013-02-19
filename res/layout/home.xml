@@ -91,6 +91,7 @@
               android:background="@drawable/keypad_button"
               android:text="@string/button2"
               android:textColor="#fff"
+              android:onClick="numpadClick"
               android:textSize="50sp" />
 
           <Button
@@ -103,6 +104,7 @@
              android:text="@string/button1"
              android:textColor="#fff"
              android:layout_toLeftOf="@id/button2"
+             android:onClick="numpadClick"
              android:textSize="50sp" />
           
           <Button
@@ -115,6 +117,7 @@
               android:text="@string/button3"
               android:textColor="#fff"
               android:layout_toRightOf="@id/button2"
+              android:onClick="numpadClick"
               android:textSize="50sp" />
       </RelativeLayout>
       
@@ -132,6 +135,7 @@
               android:textColor="#fff"
               android:textSize="50sp"
               android:layout_margin="8dp"
+              android:onClick="numpadClick"
               android:text="@string/button5" />
 
           <Button
@@ -145,6 +149,7 @@
               android:textSize="50sp"
               android:layout_margin="8dp"
               android:layout_toLeftOf="@id/button5"
+              android:onClick="numpadClick"
               android:text="@string/button4" />
           
           <Button
@@ -157,6 +162,7 @@
               android:textSize="50sp"
               android:layout_margin="8dp"
               android:layout_toRightOf="@id/button5"
+              android:onClick="numpadClick"
               android:text="@string/button6" />
       </RelativeLayout>
       
@@ -174,6 +180,7 @@
               android:textColor="#fff"
               android:textSize="50sp"
               android:layout_margin="8dp"
+              android:onClick="numpadClick"
               android:text="@string/button8" />
 
           <Button
@@ -187,6 +194,7 @@
               android:textSize="50sp"
               android:layout_margin="8dp"
               android:layout_toLeftOf="@id/button8"
+              android:onClick="numpadClick"
               android:text="@string/button7" />
           
           <Button
@@ -199,6 +207,7 @@
               android:textSize="50sp"
               android:layout_margin="8dp"
               android:layout_toRightOf="@id/button8"
+              android:onClick="numpadClick"
               android:text="@string/button9" />
       </RelativeLayout>
       
@@ -216,6 +225,7 @@
               android:textColor="#fff"
               android:textSize="50sp"
               android:layout_margin="8dp"
+              android:onClick="numpadClick"
               android:text="@string/button0" />
 
           <ImageButton

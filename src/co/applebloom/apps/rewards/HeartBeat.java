@@ -15,7 +15,7 @@ public class HeartBeat
 {
 	private static List<SystemTimerListener> clockListener = new ArrayList<SystemTimerListener>();
 	private final Timer clockTimer;
-	private final long FPS = 40;
+	private final long FPS = 15;
 	
 	public HeartBeat()
 	{
@@ -45,7 +45,10 @@ public class HeartBeat
 	private void timerSignal()
 	{
 		for ( SystemTimerListener listener : clockListener )
+		{
+			Log.d( TAG, "Executing Listener: " + listener.getClass() );
 			listener.onSystemTimeSignal();
+		}
 	}
 	
 	public void killTimer()

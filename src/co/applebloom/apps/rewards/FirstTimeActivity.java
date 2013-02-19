@@ -132,18 +132,31 @@ public class FirstTimeActivity extends TimedActivity implements OnClickListener,
 			if ( !a.isChecked() )
 			{
 				new AlertDialog.Builder(this)
-            	.setMessage("You agree to the terms of service.")
+            	.setMessage("You must agree to the terms of service.")
             	.setPositiveButton("Ok", null)
             	.show();
 				return;
 			}
 			
+			CheckBox b = (CheckBox) findViewById(R.id.text);
+			
+			if ( b.isChecked() )
+			{
+				// TODO: Send a SMS message using the WebSocket System. @Priority: High
+			}
+			
 			SQLiteDatabase db = LaunchActivity.myLittleDB.getWritableDatabase();
 			
-			// Send Text Message
-			// CheckBox c = (CheckBox) findViewById(R.id.text);
-			
 			String email = ((EditText) findViewById(R.id.email)).getText().toString();
+			
+			if ( !android.util.Patterns.EMAIL_ADDRESS.matcher( email ).matches() )
+			{
+				new AlertDialog.Builder(this)
+         	.setMessage("It seems the email address you entered in invalid. Please double check it and try again.")
+         	.setPositiveButton("Ok", null)
+         	.show();
+				return;
+			}
 			
 			if ( email == null )
 				email = "";

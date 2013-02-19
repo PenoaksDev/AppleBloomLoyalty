@@ -193,7 +193,8 @@ public class JSONObj extends JSONObject
 						if ( !arguments.isEmpty() )
 							arguments += "&";
 						
-						arguments += "uuid=" + LaunchActivity.uuid;
+						// TODO: Renable
+						// arguments += "uuid=" + LaunchActivity.uuid;
 						
 						Log.v(TAG, "Getting JSON from URL \"" + httpURL + "\" with params \"" + arguments + "\"");
 						
