@@ -146,10 +146,13 @@ public class FirstTimeActivity extends TimedActivity implements OnClickListener,
 			}
 			
 			SQLiteDatabase db = LaunchActivity.myLittleDB.getWritableDatabase();
-			
+
 			String email = ((EditText) findViewById(R.id.email)).getText().toString();
 			
-			if ( !android.util.Patterns.EMAIL_ADDRESS.matcher( email ).matches() )
+			if ( email == null )
+				email = "";
+			
+			if ( email.length() > 0 && !android.util.Patterns.EMAIL_ADDRESS.matcher( email ).matches() )
 			{
 				new AlertDialog.Builder(this)
          	.setMessage("It seems the email address you entered in invalid. Please double check it and try again.")
@@ -157,9 +160,6 @@ public class FirstTimeActivity extends TimedActivity implements OnClickListener,
          	.show();
 				return;
 			}
-			
-			if ( email == null )
-				email = "";
 			
 			String name = formatPhoneNumber( phoneNumber );
 			ContentValues insert = new ContentValues();

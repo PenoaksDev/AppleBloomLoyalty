@@ -112,7 +112,7 @@ public class WebsocketHandler
 			//mConnection.sendTextMessage( "ECHO " );
 			isConnected = true;
 			
-			WebSocketService.register();
+			WebSocketService.register( true );
 		}
 		
 		@Override
