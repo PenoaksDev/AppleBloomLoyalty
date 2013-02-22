@@ -19,17 +19,12 @@ import java.util.UUID;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.chiorichan.android.MyLittleDB;
-
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.Toast;
+import co.applebloom.apps.rewards.CommonUtils;
 import co.applebloom.apps.rewards.LaunchActivity;
-import co.applebloom.apps.rewards.ServerUtils;
-import co.applebloom.apps.rewards.SystemTimerListener;
 import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketException;
 import de.tavendo.autobahn.WebSocketHandler;
@@ -113,6 +108,8 @@ public class WebsocketHandler
 			isConnected = true;
 			
 			WebSocketService.register( true );
+			
+			Toast.makeText( LaunchActivity.getAppContext(), "Successfully Make a Websocket Connection! :D", Toast.LENGTH_SHORT ).show();
 		}
 		
 		@Override
@@ -127,7 +124,7 @@ public class WebsocketHandler
 			if ( cmd.equals( "PONG" ) )
 			{
 				Log.d( TAG, "Receive a message of good health from the Apple Bloom Rewards Web Socket. :)" );
-				WebSocketService.deviceState = "Receive a message of good health from the Apple Bloom Rewards Web Socket. :)";
+				WebSocketService.deviceState = "Received a message of good health from the Apple Bloom Rewards Web Socket. :)";
 			}
 			else if ( cmd.equals( "INVD" ) )
 			{
@@ -190,6 +187,12 @@ public class WebsocketHandler
 				// This is usually a response to the request to download all accounts from the Apple Bloom Servers.
 				WebSocketService.syncAccounts( payload );
 			}
+			else if ( cmd.equals( "REBO" ) )
+			{
+				// Reboot the device.
+				send( "INFO The device is now attempting to restart." );
+				CommonUtils.restartDevice();
+			}
 			else if ( cmd.equals( "NOLO" ) )
 			{
 				// There is location registered with this device.
@@ -204,11 +207,6 @@ public class WebsocketHandler
 				SharedPreferences.Editor editor = WebSocketService.sharedPrefs.edit();
 				
 				editor.putString( "uuid", payload );
-				//editor.putString( "img", deviceImg );
-				//editor.putString( "title", deviceTitle );
-				//editor.putString( "address1", deviceAddress1 );
-				//editor.putString( "address2", deviceAddress2 );
-				//editor.putString( "locID", locID );
 				
 				editor.commit();
 				
@@ -227,6 +225,8 @@ public class WebsocketHandler
 		{
 			Log.d( TAG, "Connection lost." );
 			isConnected = false;
+			
+			Toast.makeText( LaunchActivity.getAppContext(), "Websocket Connection was Lost! :(", Toast.LENGTH_SHORT ).show();
 		}
 	}
 }

@@ -14,9 +14,11 @@ import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -47,12 +49,15 @@ public class WebSocketService extends IntentService
 	public WebSocketService()
 	{
 		super( WebSocketService.class.getSimpleName() );
+		
+		if ( sharedPrefs == null && LaunchActivity.getInstance() != null )
+			sharedPrefs = LaunchActivity.getInstance().getSharedPreferences( "AppleBloomRewards", 0 );
 	}
 	
 	@Override
 	public void onCreate()
 	{
-		Toast.makeText( this, "Web Socket Service Started", Toast.LENGTH_LONG ).show();
+		Toast.makeText( this, "Web Socket Service Started! :D", Toast.LENGTH_SHORT ).show();
 		
 		context = this;
 		
@@ -60,18 +65,13 @@ public class WebSocketService extends IntentService
 		if ( LaunchActivity.getInstance() == null )
 			return;
 		
-		if ( sharedPrefs == null && LaunchActivity.getInstance() != null )
-			sharedPrefs = LaunchActivity.getInstance().getSharedPreferences( "AppleBloomRewards", 0 );
-		
 		deviceUUID = sharedPrefs.getString( "uuid", null );
 	}
 	
 	@Override
 	public int onStartCommand( Intent intent, int flags, int startId )
 	{
-		Log.d( TAG, "Web Socket Service Started" );
-		
-		System.out.println( "Registered: " + registered + " UUID: " + deviceUUID );
+		Log.d( TAG, "Registered: " + registered + " UUID: " + deviceUUID );
 		
 		if ( deviceUUID == null )
 			registered = false;
@@ -92,6 +92,11 @@ public class WebSocketService extends IntentService
 		scheduleNextUpdate();
 		
 		return Service.START_STICKY;
+	}
+	
+	public static void send( String msg )
+	{
+		chi.send( msg );
 	}
 	
 	public static void setLocation( String json )

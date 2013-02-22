@@ -1,5 +1,9 @@
 package co.applebloom.apps.rewards;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -15,10 +19,12 @@ import android.content.pm.PackageInfo;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -139,23 +145,25 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		titlev.setText( sharedPrefs.getString( "title", "Apple Bloom Rewards" ) );
 		address.setText( sharedPrefs.getString( "address1", "" ) + ", " + sharedPrefs.getString( "address2", "" ) );
 		
-		Intent intent = new Intent(this, WebSocketService.class);
+		Intent intent = new Intent( this, WebSocketService.class );
 		startService( intent );
 		bindService( intent, mConnection, Context.BIND_AUTO_CREATE );
 		
+		new updateUI().execute();
 		new ScreenReceiver();
 	}
 	
 	/**
 	 * Send a thrown exception to the Apple Bloom Websocket
+	 * 
 	 * @param e
 	 */
-	public static void sendException ( Exception e )
+	public static void sendException( Exception e )
 	{
 		getInstance().s.sendException( e );
 	}
 	
-	public static void startPushLink ( String DeviceUUID )
+	public static void startPushLink( String DeviceUUID )
 	{
 		PushLink.start( getAppContext(), R.drawable.ic_launcher, "3vcnlaneunf3k0k0", DeviceUUID );
 		
@@ -164,7 +172,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		PushLink.addMetadata( "Android Version", Build.VERSION.RELEASE );
 		
 		FriendlyPopUpStrategy fps = (FriendlyPopUpStrategy) PushLink.getCurrentStrategy();
-		fps.setPopUpMessage(	"New critical bugfixes are now available. Please update." );
+		fps.setPopUpMessage( "New critical bugfixes are now available. Please update." );
 		fps.setNotNowButton( "Later" );
 		fps.setUpdateButton( "Update Now" );
 		fps.setReminderTimeInSeconds( 60 * 15 );
@@ -175,7 +183,6 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		public void onServiceConnected( ComponentName className, IBinder binder )
 		{
 			s = ( (WebSocketService.MyBinder) binder ).getService();
-			Toast.makeText( LaunchActivity.this, "Connected", Toast.LENGTH_SHORT ).show();
 		}
 		
 		public void onServiceDisconnected( ComponentName className )
@@ -442,6 +449,39 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			{
 				Log.d( TAG, "Barcode scan failed to return data for an unknown reason. Check logs." );
 			}
+		}
+	}
+	
+	public class updateUI extends AsyncTask<Void, String, Void>
+	{
+		@Override
+		protected void onProgressUpdate( String... values )
+		{
+			if ( !deviceState.getText().toString().equals( WebSocketService.deviceState ) )
+				deviceState.setText( "Device State: " + WebSocketService.deviceState );
+			
+			if ( !uuid.getText().toString().equals( WebSocketService.deviceUUID ) )
+				uuid.setText( "Device UUID: " + WebSocketService.deviceUUID );
+			
+			if ( !titlev.getText().toString().equals( sharedPrefs.getString( "title", "Apple Bloom Rewards" ) ) )
+			{
+				applyHeaderImage( sharedPrefs.getString( "img", null ) );
+				titlev.setText( sharedPrefs.getString( "title", "Apple Bloom Rewards" ) );
+				address.setText( sharedPrefs.getString( "address1", "" ) + ", " + sharedPrefs.getString( "address2", "" ) );
+				
+				Toast.makeText( LaunchActivity.context, "The UI has been updated! :D", Toast.LENGTH_LONG ).show();
+			}
+		}
+		
+		@Override
+		protected Void doInBackground( Void... noparams )
+		{
+			do
+			{
+				publishProgress( null );
+				SystemClock.sleep( 5000 );
+			}
+			while ( true );
 		}
 	}
 	

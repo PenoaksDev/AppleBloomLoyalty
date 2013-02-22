@@ -38,9 +38,9 @@ public final class ServerUtils
 		ServerUtils.instance = instance;
 	}
 	
-	public static void sendException( Throwable e )
+	public static void sendException( Throwable t )
 	{
-		PushLink.sendAsyncException( e );
+		PushLink.sendAsyncException( t );
 		// Send Exception to Apple Bloom Servers
 	}
 	
