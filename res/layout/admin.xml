@@ -51,39 +51,47 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10sp"
         android:text="Reboot This Device" />
-    
-	<Button
+
+    <Button
+        android:id="@+id/sms"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10sp"
+        android:onClick="sendWelcomeSMS"
+        android:text="Send Welcome SMS" />
+
+    <Button
         android:id="@+id/hello"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10sp"
         android:onClick="sayHelloClick"
         android:text="Say Hello To The Nice Server!" />
-	
-	<Button
+
+    <Button
         android:id="@+id/redeem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10sp"
         android:onClick="forceRedeemClick"
         android:text="Force a Redeemable Download" />
-	
-	<Button
+
+    <Button
         android:id="@+id/acct"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10sp"
         android:onClick="forceAcctClick"
         android:text="Force an Accounts Download/Update" />
-	
-	<Button
+
+    <Button
         android:id="@+id/request"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10sp"
         android:onClick="requestNewClick"
         android:text="Request UUID from Server! (WARNING)" />
-    
+
     <Button
         android:id="@+id/done"
         android:layout_width="match_parent"

@@ -3,24 +3,23 @@ package co.applebloom.apps.rewards;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import co.applebloom.api.WebSocketService;
-
-import com.chiorichan.utils.Reversed;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.InputType;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import co.applebloom.api.WebSocketService;
 
 public class AdminActivity extends Activity
 {
@@ -70,6 +69,30 @@ public class AdminActivity extends Activity
 		version.setText( "Apple Bloom Rewards Version " + LaunchActivity.appVersion );
 		
 		new logCatReader().execute();
+	}
+	
+	public void sendWelcomeSMS( View v )
+	{
+		final EditText input = new EditText( this );
+		input.setInputType( InputType.TYPE_CLASS_PHONE );
+		
+		new AlertDialog.Builder( this ).setTitle( "Mobile Number" ).setMessage( "Please enter a mobile number to receive the text message:" ).setView( input ).setPositiveButton( "Ok", new DialogInterface.OnClickListener()
+		{
+			public void onClick( DialogInterface dialog, int whichButton )
+			{
+				try
+				{
+					LaunchActivity.getInstance().s.sendMessageSync( "TXT " + input.getText() );
+				}
+				catch ( Exception e ) { e.printStackTrace(); }
+			}
+		} ).setNegativeButton( "Cancel", new DialogInterface.OnClickListener()
+		{
+			public void onClick( DialogInterface dialog, int whichButton )
+			{
+				// Do nothing.
+			}
+		} ).show();
 	}
 	
 	public void forceRedeemClick( View v )

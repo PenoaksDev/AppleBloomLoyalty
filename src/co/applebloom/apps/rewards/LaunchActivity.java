@@ -1,8 +1,6 @@
 package co.applebloom.apps.rewards;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import org.json.JSONException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -22,6 +20,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -42,7 +41,9 @@ import android.widget.Toast;
 import co.applebloom.api.WebSocketService;
 import co.applebloom.apps.scanner.ScannerActivity;
 
+import com.chiorichan.android.JSONObj;
 import com.chiorichan.android.MyLittleDB;
+import com.chiorichan.android.SplashView;
 import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 import com.pushlink.android.FriendlyPopUpStrategy;
 import com.pushlink.android.PushLink;
@@ -58,6 +59,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	public static Resources res;
 	
 	private Button go;
+	private Handler uiThreadHandler = new Handler();
 	private TextView titlev, address, version, uuid, phone, deviceState;
 	private boolean continueAllowed = false;
 	private ImageButton scan, back;
@@ -69,7 +71,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	private static Context context;
 	
 	@Override
-	public void onCreate( Bundle savedInstanceState )
+	public void onCreate( final Bundle savedInstanceState )
 	{
 		super.onCreate( savedInstanceState );
 		
@@ -86,6 +88,32 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		context = this.getApplicationContext();
 		myLittleDB = new MyLittleDB( context );
 		
+		SplashView splashView = new SplashView( this );
+		
+		final LaunchActivity mainThis = this;
+		
+		splashView.setSplashEventHandler( new SplashView.SplashEvents()
+		{
+			@Override
+			public void onSplashDrawComplete()
+			{
+				// Post the runnable that will put up the main view
+				uiThreadHandler.post( new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						launchMainView( mainThis, savedInstanceState );
+					}
+				} );
+			}
+		} );
+		
+		this.setContentView( splashView );
+	}
+	
+	public void launchMainView( LaunchActivity mainThis, Bundle savedInstanceState )
+	{
 		setContentView( R.layout.home );
 		
 		sharedPrefs = getSharedPreferences( "AppleBloomRewards", 0 );
@@ -163,6 +191,18 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		getInstance().s.sendException( e );
 	}
 	
+	public static WebSocketService getSocketService()
+	{
+		try
+		{
+			return LaunchActivity.getInstance().s;
+		}
+		catch ( Exception e )
+		{
+			return null;
+		}
+	}
+	
 	public static void startPushLink( String DeviceUUID )
 	{
 		PushLink.start( getAppContext(), R.drawable.ic_launcher, "3vcnlaneunf3k0k0", DeviceUUID );
@@ -199,8 +239,11 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			headerImage.setBackgroundResource( R.drawable.default_logo );
 			return;
 		}
-		
-		UrlImageViewHelper.setUrlDrawable( headerImage, filename );
+		else
+		{
+			headerImage.setBackgroundDrawable( null );
+			UrlImageViewHelper.setUrlDrawable( headerImage, filename );
+		}
 	}
 	
 	public void numpadClick( View v )
@@ -282,6 +325,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		int balance = 5;
 		String name = "";
 		String email = "";
+		Long first_added = 0L;
 		Long last_instore_check = 0L;
 		String err = "Sorry, Not enough time has pasted since your last visit!";
 		String msg = "Congrats, You have hust earned 5 points for visiting today!";
@@ -291,6 +335,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			cursor.moveToFirst();
 			name = cursor.getString( 1 );
 			email = cursor.getString( 2 );
+			first_added = cursor.getLong( 2 );
 			balance = cursor.getInt( 4 );
 			last_instore_check = cursor.getLong( 5 );
 			
@@ -331,6 +376,28 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			SQLiteDatabase tdb = myLittleDB.getWritableDatabase();
 			tdb.insert( "trans", null, trans );
 			tdb.close();
+			
+			JSONObj jsn = null;
+			try
+			{
+				jsn = new JSONObj( "{}" );
+				
+				jsn.put( "id", phoneNumber );
+				jsn.put( "name", ( ( name.equals( CommonUtils.formatPhoneNumber( phoneNumber ) ) ) ? "" : name ) );
+				jsn.put( "email", email );
+				jsn.put( "first_added", first_added );
+				jsn.put( "balance", balance );
+				jsn.put( "last_instore_check", System.currentTimeMillis() );
+			}
+			catch ( JSONException e )
+			{
+				e.printStackTrace();
+			}
+			finally
+			{
+				if ( s != null )
+					s.sendMessageSync( "ACCT " + jsn.toString() );
+			}
 			
 			intent.putExtra( "com.applebloom.apps.message", msg );
 		}

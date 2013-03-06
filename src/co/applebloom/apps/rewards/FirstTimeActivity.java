@@ -22,6 +22,8 @@ import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
+import co.applebloom.api.WebSocketService;
+
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
@@ -142,7 +144,7 @@ public class FirstTimeActivity extends TimedActivity implements OnClickListener,
 			
 			if ( b.isChecked() )
 			{
-				// TODO: Send a SMS message using the WebSocket System. @Priority: High
+				LaunchActivity.getInstance().s.sendMessageSync( "TXT " + phoneNumber );
 			}
 			
 			SQLiteDatabase db = LaunchActivity.myLittleDB.getWritableDatabase();

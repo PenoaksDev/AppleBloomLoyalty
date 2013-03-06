@@ -22,6 +22,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.os.Binder;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -31,6 +32,7 @@ import android.widget.Toast;
 import co.applebloom.apps.rewards.LaunchActivity;
 
 import com.chiorichan.android.JSONObj;
+import com.chiorichan.android.MD5Checksum;
 import com.chiorichan.android.MyLittleDB;
 import com.pushlink.android.PushLink;
 
@@ -81,12 +83,16 @@ public class WebSocketService extends IntentService
 			register();
 			chi.send( "PING" );
 			
+			/*
 			// If true then changes have been made from the main activity. i.e. Some earned or redeemed points.
 			if ( changesMade )
 			{
 				syncAccounts();
 				changesMade = false;
 			}
+			*/
+			
+			sendSyncedMessages();
 		}
 		
 		scheduleNextUpdate();
@@ -94,9 +100,56 @@ public class WebSocketService extends IntentService
 		return Service.START_STICKY;
 	}
 	
-	public static void send( String msg )
+	public void sendSyncedMessages()
 	{
+		if ( LaunchActivity.myLittleDB == null )
+			LaunchActivity.myLittleDB = new MyLittleDB( context );
+		
+		if ( LaunchActivity.myLittleDB == null )
+			return;
+		
+		SQLiteDatabase db = LaunchActivity.myLittleDB.getReadableDatabase();
+		SQLiteDatabase dbw = LaunchActivity.myLittleDB.getWritableDatabase();
+		
+		Cursor cursor = null;
+		
+		try
+		{
+			cursor = db.query( "pending", null, null, null, null, null, null );
+		}
+		catch ( SQLiteException e )
+		{
+			try
+			{
+				dbw.execSQL("CREATE TABLE pending (id, time, msg, expire);");
+			}
+			catch ( SQLiteException e1 )
+			{}
+			
+			return;
+		}
+
+		if ( cursor.getCount() > 0 )
+		{
+			cursor.moveToFirst();
+			
+			do
+			{
+				if ( send( cursor.getString( 2 ) ) )
+					dbw.delete( "pending", "`id` = '" + cursor.getString( 0 ) + "'", null );
+			}
+			while ( cursor.moveToNext() );
+		}
+	}
+	
+	public static Boolean send( String msg )
+	{
+		if ( !chi.isConnected )
+			return false;
+			
 		chi.send( msg );
+		
+		return true;
 	}
 	
 	public static void setLocation( String json )
@@ -197,6 +250,36 @@ public class WebSocketService extends IntentService
 			return;
 		
 		chi.send( "UPAC" ); // Force Update Accounts
+	}
+	
+	/**
+	 * This method saves a message to the database for redundency to make sure it reaches the server.
+	 * 
+	 * @param msg
+	 * @return success
+	 */
+	public Boolean sendMessageSync( String msg )
+	{
+		if ( LaunchActivity.myLittleDB == null )
+			LaunchActivity.myLittleDB = new MyLittleDB( context );
+		
+		if ( LaunchActivity.myLittleDB == null )
+			return false;
+		
+		SQLiteDatabase db = LaunchActivity.myLittleDB.getWritableDatabase();
+		
+		ContentValues insert = new ContentValues();
+		
+		insert.put( "id", MD5Checksum.get( msg ) );
+		insert.put( "time", System.currentTimeMillis() );
+		insert.put( "msg", msg );
+		insert.put( "expire", 0 );
+		
+		db.insert( "pending", null, insert );
+		
+		Log.d( TAG, "" );
+		
+		return true;
 	}
 	
 	/**

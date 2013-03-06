@@ -226,7 +226,8 @@ public class WebsocketHandler
 			Log.d( TAG, "Connection lost." );
 			isConnected = false;
 			
-			Toast.makeText( LaunchActivity.getAppContext(), "Websocket Connection was Lost! :(", Toast.LENGTH_SHORT ).show();
+			//TODO: Make me only appear every so often
+			//Toast.makeText( LaunchActivity.getAppContext(), "Websocket Connection was Lost! :(", Toast.LENGTH_SHORT ).show();
 		}
 	}
 }

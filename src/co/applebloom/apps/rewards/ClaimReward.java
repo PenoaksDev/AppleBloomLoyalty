@@ -1,5 +1,7 @@
 package co.applebloom.apps.rewards;
 
+import org.json.JSONException;
+
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -108,6 +110,28 @@ public class ClaimReward extends Activity implements OnClickListener
 				SQLiteDatabase tdb = LaunchActivity.myLittleDB.getWritableDatabase();
 				tdb.insert( "trans", null, trans );
 				tdb.close();
+				
+				JSONObj jsn = null;
+				try
+				{
+					jsn = new JSONObj("{}");
+					
+					jsn.put( "id", phoneNumber );
+					jsn.put( "name", "" );
+					jsn.put( "email", "" );
+					jsn.put( "first_added", 0L );
+					jsn.put( "balance", balance );
+					jsn.put( "last_instore_check", 0L );
+				}
+				catch ( JSONException e )
+				{
+					e.printStackTrace();
+				}
+				finally
+				{
+					if ( LaunchActivity.getSocketService() != null )
+						LaunchActivity.getSocketService().sendMessageSync( "ACCT " + jsn.toString() );
+				}
 			}
 			else
 			{
