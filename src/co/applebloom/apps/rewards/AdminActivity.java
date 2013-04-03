@@ -168,7 +168,7 @@ public class AdminActivity extends Activity
 			}
 			catch ( IOException e )
 			{
-				LaunchActivity.sendException( e );
+				//LaunchActivity.sendException( e );
 			}
 			
 			return null;

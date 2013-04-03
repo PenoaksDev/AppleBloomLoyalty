@@ -53,7 +53,9 @@ public class WebsocketHandler
 		if ( isConnected )
 			return true;
 		else
+		{
 			makeConnection();
+		}
 		
 		/*
 		// TODO: Wait 10 seconds for the connection to complete.
@@ -82,6 +84,9 @@ public class WebsocketHandler
 	{
 		try
 		{
+			if ( mConnection.isConnected() )
+				mConnection.disconnect();
+			
 			mConnection.connect( SERVER_URL, weh);
 		}
 		catch ( WebSocketException e )
@@ -125,6 +130,9 @@ public class WebsocketHandler
 			{
 				Log.d( TAG, "Receive a message of good health from the Apple Bloom Rewards Web Socket. :)" );
 				WebSocketService.deviceState = "Received a message of good health from the Apple Bloom Rewards Web Socket. :)";
+				
+				if ( WebSocketService.lastPing > 0 )
+					WebSocketService.lastLatency = System.currentTimeMillis() - WebSocketService.lastPing; 
 			}
 			else if ( cmd.equals( "INVD" ) )
 			{
@@ -135,6 +143,10 @@ public class WebsocketHandler
 			else if ( cmd.equals( "LOCI" ) )
 			{
 				WebSocketService.setLocation( payload );
+			}
+			else if ( cmd.equals( "OPT" ) )
+			{
+				WebSocketService.handleOption( payload );
 			}
 			else if ( cmd.equals( "INFO" ) )
 			{

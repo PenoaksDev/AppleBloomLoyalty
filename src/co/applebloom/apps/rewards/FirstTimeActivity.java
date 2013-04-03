@@ -37,69 +37,79 @@ public class FirstTimeActivity extends TimedActivity implements OnClickListener,
 	private String phoneNumber;
 	
 	@Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN); //Clean FLAG
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-		WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+	public void onCreate( Bundle savedInstanceState )
+	{
+		super.onCreate( savedInstanceState );
 		
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+		getWindow().clearFlags( WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN ); // Clean FLAG
+		requestWindowFeature( Window.FEATURE_NO_TITLE );
+		getWindow().setFlags( WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN );
+		setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT );
 		
-        setContentView(R.layout.firsttime);
+		getWindow().addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON );
 		
-        TableLayout parent = (TableLayout) findViewById(R.id.parent);
-        parent.setOnTouchListener(this);
-        
-        finish = (Button) findViewById(R.id.finish);
-        cancel = (Button) findViewById(R.id.cancel);
-        finish.setOnClickListener(this);
-        cancel.setOnClickListener(this);
-        
-        Intent intent = getIntent();
-        phoneNumber = intent.getStringExtra("com.applebloom.apps.phoneNumber");
-        
-        if ( phoneNumber == null )
-        	finish();
-        
-        TextView nameLabel = (TextView) findViewById(R.id.name);
-        String name = formatPhoneNumber( phoneNumber );
-        nameLabel.setText( "Welcome, " + name );
-        
-        startIdleTimer();
-        
-        EditText email = (EditText) findViewById(R.id.email);
-        email.setInputType( TYPE_TEXT_VARIATION_EMAIL_ADDRESS );
-        email.addTextChangedListener(new TextWatcher()
-        {
-            public void afterTextChanged(Editable s)
-            {
-            	onTouch();
-            	
-            	if ( s.length() > 0 )
-            	{
-            		finish.setText("Continue");
-            	}
-            	else
-            	{
-            		finish.setText("Skip E-Mail");
-            	}
-            }
-            public void beforeTextChanged(CharSequence s, int start, int count, int after){}
-            public void onTextChanged(CharSequence s, int start, int before, int count){}
-        }); 
+		setContentView( R.layout.firsttime );
+		
+		TableLayout parent = (TableLayout) findViewById( R.id.parent );
+		parent.setOnTouchListener( this );
+		
+		finish = (Button) findViewById( R.id.finish );
+		cancel = (Button) findViewById( R.id.cancel );
+		finish.setOnClickListener( this );
+		cancel.setOnClickListener( this );
+		
+		Intent intent = getIntent();
+		phoneNumber = intent.getStringExtra( "com.applebloom.apps.phoneNumber" );
+		
+		if ( phoneNumber == null )
+			finish();
+		
+		TextView nameLabel = (TextView) findViewById( R.id.name );
+		String name = formatPhoneNumber( phoneNumber );
+		nameLabel.setText( "Welcome, " + name );
+		
+		CheckBox sms_check = (CheckBox) findViewById( R.id.text );
+		
+		if ( LaunchActivity.getPrefBoolean( "sms_disabled" ) )
+			sms_check.setVisibility( 0 );
+		
+		startIdleTimer();
+		
+		EditText email = (EditText) findViewById( R.id.email );
+		email.setInputType( TYPE_TEXT_VARIATION_EMAIL_ADDRESS );
+		email.addTextChangedListener( new TextWatcher()
+		{
+			public void afterTextChanged( Editable s )
+			{
+				onTouch();
+				
+				if ( s.length() > 0 )
+				{
+					finish.setText( "Continue" );
+				}
+				else
+				{
+					finish.setText( "Skip E-Mail" );
+				}
+			}
+			
+			public void beforeTextChanged( CharSequence s, int start, int count, int after )
+			{
+			}
+			
+			public void onTextChanged( CharSequence s, int start, int before, int count )
+			{
+			}
+		} );
 	}
 	
-	public String formatPhoneNumber ( String rawPhoneNumber )
+	public String formatPhoneNumber( String rawPhoneNumber )
 	{
 		PhoneNumberUtil putil = PhoneNumberUtil.getInstance();
 		try
 		{
-			PhoneNumber num = putil.parse(rawPhoneNumber, "US");
-			return putil.format(num, PhoneNumberFormat.NATIONAL);
+			PhoneNumber num = putil.parse( rawPhoneNumber, "US" );
+			return putil.format( num, PhoneNumberFormat.NATIONAL );
 		}
 		catch ( NumberParseException e )
 		{
@@ -107,40 +117,34 @@ public class FirstTimeActivity extends TimedActivity implements OnClickListener,
 		}
 	}
 	
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	if (keyCode == KeyEvent.KEYCODE_FOCUS
-    			|| keyCode == KeyEvent.KEYCODE_CAMERA
-    			|| keyCode == KeyEvent.KEYCODE_BACK
-    			|| keyCode == KeyEvent.KEYCODE_POWER
-    			|| keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
-    			|| keyCode == KeyEvent.KEYCODE_VOLUME_UP
-    			|| keyCode == KeyEvent.KEYCODE_VOLUME_MUTE
-    		) {
-    		
-    		return true;
-    	} else {
-    		return super.onKeyDown(keyCode, event);    		  
-    	}
-    }
+	@Override
+	public boolean onKeyDown( int keyCode, KeyEvent event )
+	{
+		if ( keyCode == KeyEvent.KEYCODE_FOCUS || keyCode == KeyEvent.KEYCODE_CAMERA || keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_POWER || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_MUTE )
+		{
+			
+			return true;
+		}
+		else
+		{
+			return super.onKeyDown( keyCode, event );
+		}
+	}
 	
 	@Override
-	public void onClick(View v)
+	public void onClick( View v )
 	{
 		if ( v == finish )
 		{
-			CheckBox a = (CheckBox) findViewById(R.id.agreement);
+			CheckBox a = (CheckBox) findViewById( R.id.agreement );
 			
 			if ( !a.isChecked() )
 			{
-				new AlertDialog.Builder(this)
-            	.setMessage("You must agree to the terms of service.")
-            	.setPositiveButton("Ok", null)
-            	.show();
+				new AlertDialog.Builder( this ).setMessage( "You must agree to the terms of service." ).setPositiveButton( "Ok", null ).show();
 				return;
 			}
 			
-			CheckBox b = (CheckBox) findViewById(R.id.text);
+			CheckBox b = (CheckBox) findViewById( R.id.text );
 			
 			if ( b.isChecked() )
 			{
@@ -148,34 +152,31 @@ public class FirstTimeActivity extends TimedActivity implements OnClickListener,
 			}
 			
 			SQLiteDatabase db = LaunchActivity.myLittleDB.getWritableDatabase();
-
-			String email = ((EditText) findViewById(R.id.email)).getText().toString();
+			
+			String email = ( (EditText) findViewById( R.id.email ) ).getText().toString();
 			
 			if ( email == null )
 				email = "";
 			
 			if ( email.length() > 0 && !android.util.Patterns.EMAIL_ADDRESS.matcher( email ).matches() )
 			{
-				new AlertDialog.Builder(this)
-         	.setMessage("It seems the email address you entered in invalid. Please double check it and try again.")
-         	.setPositiveButton("Ok", null)
-         	.show();
+				new AlertDialog.Builder( this ).setMessage( "It seems the email address you entered in invalid. Please double check it and try again." ).setPositiveButton( "Ok", null ).show();
 				return;
 			}
 			
 			String name = formatPhoneNumber( phoneNumber );
 			ContentValues insert = new ContentValues();
 			
-			insert.put("id", phoneNumber);
-			insert.put("name", name);
-			insert.put("email", email);
-			insert.put("first_added", System.currentTimeMillis());
-			insert.put("balance", 0);
-			insert.put("last_instore_check", 0);
+			insert.put( "id", phoneNumber );
+			insert.put( "name", name );
+			insert.put( "email", email );
+			insert.put( "first_added", System.currentTimeMillis() );
+			insert.put( "balance", 0 );
+			insert.put( "last_instore_check", 0 );
 			
-			Log.e("REWARDS", insert.toString());
+			Log.e( "REWARDS", insert.toString() );
 			
-			db.insert("users", "id", insert);
+			db.insert( "users", "id", insert );
 			db.close();
 			
 			LaunchActivity.getInstance().processNumber( phoneNumber );
@@ -183,18 +184,18 @@ public class FirstTimeActivity extends TimedActivity implements OnClickListener,
 		}
 		else if ( v == cancel )
 		{
-			//setResult(Activity.RESULT_CANCELED);
+			// setResult(Activity.RESULT_CANCELED);
 			finish();
 		}
 	}
 	
 	@Override
-	public boolean onTouch(View v, MotionEvent event)
+	public boolean onTouch( View v, MotionEvent event )
 	{
-        final int actionPerformed = event.getAction();
-        
-        if (actionPerformed == MotionEvent.ACTION_DOWN)
-            super.onTouch();
+		final int actionPerformed = event.getAction();
+		
+		if ( actionPerformed == MotionEvent.ACTION_DOWN )
+			super.onTouch();
 		
 		return false;
 	}

@@ -181,6 +181,26 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		new ScreenReceiver();
 	}
 	
+	public static String getPrefString( String key )
+	{
+		return getPrefString( key, null );
+	}
+	
+	public static String getPrefString( String key, String dft )
+	{
+		return sharedPrefs.getString( key, dft );
+	}
+	
+	public static Boolean getPrefBoolean( String key )
+	{
+		return getPrefBoolean( key, false );
+	}
+	
+	public static Boolean getPrefBoolean( String key, Boolean dft )
+	{
+		return sharedPrefs.getBoolean( key, dft );
+	}
+	
 	/**
 	 * Send a thrown exception to the Apple Bloom Websocket
 	 * 
@@ -306,6 +326,9 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	{
 		if ( !CommonUtils.isNumeric( phoneNumber ) )
 			return "It seems there is a problem with the Phone Number you provided. Try again.";
+		
+		if ( phoneNumber.startsWith( "0" ) )
+			return "According to the US Phone Number formatting rules, You do not exist.\nSo, I'm sorry but I will have to disallow the use of this number.";
 		
 		if ( phoneNumber.startsWith( "555" ) )
 			return "What do you think this is, a movie?\nPlease enter your real mobile number.";

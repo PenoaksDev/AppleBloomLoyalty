@@ -44,6 +44,8 @@ public class WebSocketService extends IntentService
 	public static String deviceState = "This device has not been fully initalized!";
 	public static SharedPreferences sharedPrefs = null;
 	public static Boolean changesMade = true;
+	public static long lastPing = 0;
+	public static long lastLatency = 0;
 	
 	public static WebsocketHandler chi = new WebsocketHandler();
 	static final String TAG = "ABRewards";
@@ -81,7 +83,8 @@ public class WebSocketService extends IntentService
 		if ( chi.preCheck() )
 		{
 			register();
-			chi.send( "PING" );
+			chi.send( "PING " + lastLatency );
+			lastPing = System.currentTimeMillis();
 			
 			/*
 			// If true then changes have been made from the main activity. i.e. Some earned or redeemed points.
@@ -150,6 +153,36 @@ public class WebSocketService extends IntentService
 		chi.send( msg );
 		
 		return true;
+	}
+	
+	public static void handleOption ( String arg )
+	{
+		String arr1[] = arg.split("=", 2);
+		String key = arr1[0].toUpperCase();
+		String val = ( arr1.length > 1 ) ? arr1[1].trim() : "";
+		
+		try
+		{
+			SharedPreferences.Editor editor = sharedPrefs.edit();
+			
+			if ( key.equals( "SMS" ) )
+			{
+				if ( val.equals( "FALSE" ) || val.equals( "0" ) || val.equals( false ) )
+				{
+					editor.putBoolean( "sms_enabled", false );
+				}
+				else
+				{
+					editor.putBoolean( "sms_enabled", true );
+				}
+			}
+			
+			editor.commit();
+		}
+		catch ( Exception e )
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	public static void setLocation( String json )

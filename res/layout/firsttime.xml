@@ -79,7 +79,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
         android:checked="true"
-        android:text="I would like to receive text messages from this location."
+        android:text="I would like to receive sms messages from this location."
         android:textColor="#000"
         android:textSize="34sp" />
 

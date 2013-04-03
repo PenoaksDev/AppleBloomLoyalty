@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="co.applebloom.apps.rewards"
     android:versionCode="1"
-    android:versionName="2.4.0308 (Derpy Hooves)" >
+    android:versionName="2.4.0403 (Derpy Hooves)" >
 
     <supports-screens
         android:anyDensity="true"
