@@ -1,6 +1,6 @@
 package co.applebloom.apps.rewards;
 
-import static co.applebloom.apps.rewards.CommonUtils.TAG;
+import static co.applebloom.api.CommonUtils.TAG;
 
 import java.util.ArrayList;
 import java.util.List;

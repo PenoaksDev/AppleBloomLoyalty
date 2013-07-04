@@ -17,6 +17,8 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
+import co.applebloom.api.CommonUtils;
+
 import com.chiorichan.android.JSONObj;
 import com.pushlink.android.PushLink;
 

@@ -38,6 +38,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import co.applebloom.api.CommonUtils;
 import co.applebloom.api.WebSocketService;
 import co.applebloom.apps.scanner.ScannerActivity;
 

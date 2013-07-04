@@ -19,11 +19,11 @@ import java.util.UUID;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
-import co.applebloom.apps.rewards.CommonUtils;
 import co.applebloom.apps.rewards.LaunchActivity;
 import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketException;
@@ -36,7 +36,7 @@ public class WebsocketHandler
 	private final Random random = new Random();
 	
 	// Production URL
-	private static final String SERVER_URL = "ws://applebloom.co:8080/websocket";
+	private static final String SERVER_URL = "ws://apps.applebloom.co:8080/websocket";
 	
 	// Sandbox URL
 	// private static final String SERVER_URL = "ws://10.0.1.120:8080/websocket";
@@ -108,13 +108,20 @@ public class WebsocketHandler
 		@Override
 		public void onOpen()
 		{
-			Log.d( TAG, "Status: Connected to " + SERVER_URL );
-			//mConnection.sendTextMessage( "ECHO " );
-			isConnected = true;
+			try
+			{
+				Log.d( TAG, "Status: Connected to " + SERVER_URL );
+				//mConnection.sendTextMessage( "ECHO " );
+				isConnected = true;
 			
-			WebSocketService.register( true );
-			
-			Toast.makeText( LaunchActivity.getAppContext(), "Successfully Make a Websocket Connection! :D", Toast.LENGTH_SHORT ).show();
+				WebSocketService.register( true );
+				
+				Toast.makeText( LaunchActivity.getAppContext(), "Successfully Make a Websocket Connection! :D", Toast.LENGTH_SHORT ).show();
+			}
+			catch ( Throwable t )
+			{
+				t.printStackTrace();
+			}
 		}
 		
 		@Override
@@ -194,10 +201,19 @@ public class WebsocketHandler
 				// These are new redeemables that need adding to our database.
 				WebSocketService.applyRedeemables( payload, true );
 			}
+			else if ( cmd.equals( "UTUB" ) )
+			{
+				// These are new youtube videos that need adding to our database.
+				WebSocketService.appleYoutube( payload );
+			}
 			else if ( cmd.equals( "ACCT" ) )
 			{
 				// This is usually a response to the request to download all accounts from the Apple Bloom Servers.
 				WebSocketService.syncAccounts( payload );
+			}
+			else if ( cmd.equals( "PREF" ) )
+			{
+				// Open Preferences
 			}
 			else if ( cmd.equals( "REBO" ) )
 			{

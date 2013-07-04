@@ -247,26 +247,33 @@ public class WebSocketService extends IntentService
 	
 	public static void register( Boolean force )
 	{
-		if ( !registered || force )
+		try
 		{
-			if ( deviceUUID == null )
-				deviceUUID = sharedPrefs.getString( "uuid", null );
-			
-			if ( deviceUUID == null || deviceUUID == "" )
+			if ( !registered || force )
 			{
-				// We have no UUID stored in our preferences. Have the server assign us one.
-				String seed = Settings.Secure.getString( LaunchActivity.getInstance().getContentResolver(), "android_id" );
+				if ( deviceUUID == null )
+					deviceUUID = sharedPrefs.getString( "uuid", null );
 				
-				if ( seed == null )
-					seed = UUID.randomUUID().toString();
-				
-				chi.send( "BOOT " + seed );
+				if ( deviceUUID == null || deviceUUID == "" )
+				{
+					// We have no UUID stored in our preferences. Have the server assign us one.
+					String seed = Settings.Secure.getString( LaunchActivity.getInstance().getContentResolver(), "android_id" );
+					
+					if ( seed == null )
+						seed = UUID.randomUUID().toString();
+					
+					chi.send( "BOOT " + seed );
+				}
+				else
+				{
+					// Say hello to the nice Web Socket Server.
+					chi.send( "HELO " + deviceUUID );
+				}
 			}
-			else
-			{
-				// Say hello to the nice Web Socket Server.
-				chi.send( "HELO " + deviceUUID );
-			}
+		}
+		catch ( Throwable t )
+		{
+			t.printStackTrace();
 		}
 	}
 	
@@ -430,6 +437,11 @@ public class WebSocketService extends IntentService
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public static void appleYoutube( String json )
+	{
+		// NOT IMPLEMENTED on ABRewards!
 	}
 	
 	public static void applyRedeemables( String json, Boolean clearFirst )

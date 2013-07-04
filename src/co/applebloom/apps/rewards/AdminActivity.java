@@ -19,6 +19,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import co.applebloom.api.CommonUtils;
 import co.applebloom.api.WebSocketService;
 
 public class AdminActivity extends Activity
