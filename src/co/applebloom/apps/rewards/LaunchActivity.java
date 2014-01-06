@@ -491,7 +491,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	protected void onResume()
 	{
 		super.onResume();
-		PushLink.setCurrentPopUpTarget( this );
+		PushLink.setCurrentActivity( this );
 	}
 	
 	public static Context getAppContext()
