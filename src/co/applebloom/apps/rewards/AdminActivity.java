@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.InputType;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,8 +18,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import co.applebloom.api.CommonUtils;
-import co.applebloom.api.WebSocketService;
+
+import com.chiorichan.net.CommonUtils;
+import com.chiorichan.net.SocketService;
 
 public class AdminActivity extends Activity
 {
@@ -98,17 +98,17 @@ public class AdminActivity extends Activity
 	
 	public void forceRedeemClick( View v )
 	{
-		WebSocketService.requestRedeemables( true );
+		SocketService.requestRedeemables( true );
 	}
 	
 	public void forceAcctClick( View v )
 	{
-		WebSocketService.syncAccounts();
+		SocketService.syncAccounts();
 	}
 	
 	public void sayHelloClick( View v )
 	{
-		WebSocketService.register( true );
+		SocketService.register( true );
 	}
 	
 	public void requestNewClick( View v )
@@ -117,8 +117,8 @@ public class AdminActivity extends Activity
 		editor.putString( "uuid", null );
 		editor.commit();
 		
-		WebSocketService.deviceUUID = null;
-		WebSocketService.register( true );
+		SocketService.deviceUUID = null;
+		SocketService.register( true );
 	}
 	
 	public class logCatReader extends AsyncTask<Void, String, Void>
@@ -139,8 +139,8 @@ public class AdminActivity extends Activity
 			
 			tv.setText( str );
 			
-			String uuid = WebSocketService.deviceUUID;
-			String state = WebSocketService.deviceState;
+			String uuid = SocketService.deviceUUID;
+			String state = SocketService.deviceState;
 			
 			try
 			{

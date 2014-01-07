@@ -1,11 +1,12 @@
-package co.applebloom.api;
+package com.chiorichan.net;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import org.apache.http.util.ExceptionUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,11 +15,9 @@ import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -26,7 +25,6 @@ import android.database.sqlite.SQLiteException;
 import android.os.Binder;
 import android.os.IBinder;
 import android.provider.Settings;
-import android.text.format.Time;
 import android.util.Log;
 import android.widget.Toast;
 import co.applebloom.apps.rewards.LaunchActivity;
@@ -34,9 +32,9 @@ import co.applebloom.apps.rewards.LaunchActivity;
 import com.chiorichan.android.JSONObj;
 import com.chiorichan.android.MD5Checksum;
 import com.chiorichan.android.MyLittleDB;
-import com.pushlink.android.PushLink;
+import com.chiorichan.net.packet.CommandPacket;
 
-public class WebSocketService extends IntentService
+public class SocketService extends IntentService
 {
 	public static Boolean registered = false;
 	public static String deviceUUID = null;
@@ -47,12 +45,14 @@ public class WebSocketService extends IntentService
 	public static long lastPing = 0;
 	public static long lastLatency = 0;
 	
-	public static WebsocketHandler chi = new WebsocketHandler();
-	static final String TAG = "ABRewards";
+	public static SocketHandler chi;
+	public static final String TAG = "ChioriRewards";
 	
-	public WebSocketService()
+	public SocketService() throws UnknownHostException, IOException
 	{
-		super( WebSocketService.class.getSimpleName() );
+		super( SocketService.class.getSimpleName() );
+		
+		chi = new SocketHandler();
 		
 		if ( sharedPrefs == null && LaunchActivity.getInstance() != null )
 			sharedPrefs = LaunchActivity.getInstance().getSharedPreferences( "AppleBloomRewards", 0 );
@@ -61,15 +61,23 @@ public class WebSocketService extends IntentService
 	@Override
 	public void onCreate()
 	{
-		Toast.makeText( this, "Web Socket Service Started! :D", Toast.LENGTH_SHORT ).show();
+		// TODO: Read and write preferences from SD Card. Great for permanently offline instances of this Android Application.
+		
+		Toast.makeText( this, "TCP Network Service Started! :D", Toast.LENGTH_SHORT ).show();
 		
 		context = this;
 		
-		// FIXME: If activity is not running we get a NPE.
+		// FIXME: If activity is not running we have problems reading the sharedPrefs.
 		if ( LaunchActivity.getInstance() == null )
 			return;
 		
 		deviceUUID = sharedPrefs.getString( "uuid", null );
+	}
+	
+	@Override
+	protected void onHandleIntent( Intent paramIntent )
+	{
+		
 	}
 	
 	@Override
@@ -80,22 +88,34 @@ public class WebSocketService extends IntentService
 		if ( deviceUUID == null )
 			registered = false;
 		
-		if ( chi.preCheck() )
+		try
 		{
-			register();
-			chi.send( "PING " + lastLatency );
-			lastPing = System.currentTimeMillis();
-			
-			/*
-			// If true then changes have been made from the main activity. i.e. Some earned or redeemed points.
-			if ( changesMade )
+			if ( chi.connectionCheck() )
 			{
-				syncAccounts();
-				changesMade = false;
+				register();
+				
+				chi.send( new CommandPacket( "PING", lastLatency ) );
+				lastPing = System.currentTimeMillis();
+				
+				/*
+				 * // If true then changes have been made from the main activity. i.e. Some earned or redeemed points.
+				 * if ( changesMade )
+				 * {
+				 * syncAccounts();
+				 * changesMade = false;
+				 * }
+				 */
+				
+				sendSyncedMessages();
 			}
-			*/
-			
-			sendSyncedMessages();
+		}
+		catch ( UnknownHostException e )
+		{
+			e.printStackTrace();
+		}
+		catch ( IOException e )
+		{
+			e.printStackTrace();
 		}
 		
 		scheduleNextUpdate();
@@ -124,40 +144,40 @@ public class WebSocketService extends IntentService
 		{
 			try
 			{
-				dbw.execSQL("CREATE TABLE pending (id, time, msg, expire);");
+				dbw.execSQL( "CREATE TABLE pending (id, time, msg, expire);" );
 			}
 			catch ( SQLiteException e1 )
 			{}
 			
 			return;
 		}
-
+		
 		if ( cursor.getCount() > 0 )
 		{
 			cursor.moveToFirst();
 			
 			do
 			{
-				if ( send( cursor.getString( 2 ) ) )
+				if ( send( cursor.getString( 2 ), "" ) )
 					dbw.delete( "pending", "`id` = '" + cursor.getString( 0 ) + "'", null );
 			}
 			while ( cursor.moveToNext() );
 		}
 	}
 	
-	public static Boolean send( String msg )
+	public static Boolean send( String key, String msg )
 	{
-		if ( !chi.isConnected )
+		if ( !chi.isConnected() )
 			return false;
-			
-		chi.send( msg );
+		
+		chi.send( new CommandPacket( key, msg ) );
 		
 		return true;
 	}
 	
-	public static void handleOption ( String arg )
+	public static void handleOption( String arg )
 	{
-		String arr1[] = arg.split("=", 2);
+		String arr1[] = arg.split( "=", 2 );
 		String key = arr1[0].toUpperCase();
 		String val = ( arr1.length > 1 ) ? arr1[1].trim() : "";
 		
@@ -211,12 +231,6 @@ public class WebSocketService extends IntentService
 		return deviceUUID;
 	}
 	
-	@Override
-	protected void onHandleIntent( Intent paramIntent )
-	{
-		
-	}
-	
 	public void sendException( Exception e )
 	{
 		// TODO: Does this work?
@@ -225,7 +239,7 @@ public class WebSocketService extends IntentService
 		PrintWriter pw = new PrintWriter( sw );
 		e.printStackTrace( pw );
 		
-		chi.send( "EXCP " + sw.toString() );
+		send( "EXCP", sw.toString() );
 	}
 	
 	private void scheduleNextUpdate()
@@ -262,12 +276,12 @@ public class WebSocketService extends IntentService
 					if ( seed == null )
 						seed = UUID.randomUUID().toString();
 					
-					chi.send( "BOOT " + seed );
+					send( "BOOT", seed );
 				}
 				else
 				{
 					// Say hello to the nice Web Socket Server.
-					chi.send( "HELO " + deviceUUID );
+					send( "HELO", deviceUUID );
 				}
 			}
 		}
@@ -289,7 +303,7 @@ public class WebSocketService extends IntentService
 		if ( LaunchActivity.myLittleDB == null )
 			return;
 		
-		chi.send( "UPAC" ); // Force Update Accounts
+		send( "UPAC", "" ); // Force Update Accounts
 	}
 	
 	/**
@@ -430,7 +444,7 @@ public class WebSocketService extends IntentService
 				
 				System.out.println( json1.toString() );
 				
-				chi.send( "ACCT " + json1.toString() );
+				send( "ACCT", json1.toString() );
 			}
 			catch ( JSONException e )
 			{
@@ -502,7 +516,7 @@ public class WebSocketService extends IntentService
 		
 		if ( cursor.getCount() < 1 || force )
 		{
-			chi.send( "UPRE" ); // Update Redeemables
+			send( "UPRE", "" ); // Update Redeemables
 		}
 	}
 	
@@ -521,7 +535,7 @@ public class WebSocketService extends IntentService
 		{
 			if ( trans.toString().length() > 8000 )
 			{
-				chi.send( "SYNC " + trans.toString() );
+				send( "SYNC", trans.toString() );
 				trans = new JSONArray();
 			}
 			
@@ -558,7 +572,7 @@ public class WebSocketService extends IntentService
 			}
 		}
 		
-		chi.send( "SYNC " + trans.toString() );
+		send( "SYNC", trans.toString() );
 		
 		db.close();
 		
@@ -580,9 +594,9 @@ public class WebSocketService extends IntentService
 	
 	public class MyBinder extends Binder
 	{
-		public WebSocketService getService()
+		public SocketService getService()
 		{
-			return WebSocketService.this;
+			return SocketService.this;
 		}
 	}
 }

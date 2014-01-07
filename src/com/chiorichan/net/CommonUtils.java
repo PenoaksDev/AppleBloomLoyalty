@@ -1,4 +1,4 @@
-package co.applebloom.api;
+package com.chiorichan.net;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;

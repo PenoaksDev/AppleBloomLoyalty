@@ -1,21 +1,5 @@
 package co.applebloom.apps.rewards;
 
-import java.util.Random;
-import java.util.UUID;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-
-import android.content.ContentValues;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.provider.Settings;
-import android.util.Log;
-
-import co.applebloom.api.WebsocketHandler;
-
-import com.chiorichan.android.JSONObj;
 import com.pushlink.android.PushLink;
 
 public final class ServerUtils

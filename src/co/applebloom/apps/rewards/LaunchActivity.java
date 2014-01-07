@@ -38,13 +38,13 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import co.applebloom.api.CommonUtils;
-import co.applebloom.api.WebSocketService;
 import co.applebloom.apps.scanner.ScannerActivity;
 
 import com.chiorichan.android.JSONObj;
 import com.chiorichan.android.MyLittleDB;
 import com.chiorichan.android.SplashView;
+import com.chiorichan.net.CommonUtils;
+import com.chiorichan.net.SocketService;
 import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 import com.pushlink.android.FriendlyPopUpStrategy;
 import com.pushlink.android.PushLink;
@@ -64,7 +64,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	private TextView titlev, address, version, uuid, phone, deviceState;
 	private boolean continueAllowed = false;
 	private ImageButton scan, back;
-	public WebSocketService s;
+	public SocketService s;
 	
 	private static final String TAG = "ABRewards";
 	private static LaunchActivity instance;
@@ -167,19 +167,19 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			sendException( e );
 		}
 		
-		uuid.setText( "Device UUID: " + WebSocketService.deviceUUID );
-		deviceState.setText( "Device State: " + WebSocketService.deviceState );
+		uuid.setText( "Device UUID: " + SocketService.deviceUUID );
+		deviceState.setText( "Device State: " + SocketService.deviceState );
 		
 		applyHeaderImage( sharedPrefs.getString( "img", null ) );
 		titlev.setText( sharedPrefs.getString( "title", "Apple Bloom Rewards" ) );
 		address.setText( sharedPrefs.getString( "address1", "" ) + ", " + sharedPrefs.getString( "address2", "" ) );
 		
-		Intent intent = new Intent( this, WebSocketService.class );
+		Intent intent = new Intent( this, SocketService.class );
 		startService( intent );
 		bindService( intent, mConnection, Context.BIND_AUTO_CREATE );
 		
 		new updateUI().execute();
-		new ScreenReceiver();
+		//new ScreenReceiver();
 	}
 	
 	public static String getPrefString( String key )
@@ -212,7 +212,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		getInstance().s.sendException( e );
 	}
 	
-	public static WebSocketService getSocketService()
+	public static SocketService getSocketService()
 	{
 		try
 		{
@@ -243,7 +243,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	{
 		public void onServiceConnected( ComponentName className, IBinder binder )
 		{
-			s = ( (WebSocketService.MyBinder) binder ).getService();
+			s = ( (SocketService.MyBinder) binder ).getService();
 		}
 		
 		public void onServiceDisconnected( ComponentName className )
@@ -548,11 +548,11 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		@Override
 		protected void onProgressUpdate( String... values )
 		{
-			if ( !deviceState.getText().toString().equals( WebSocketService.deviceState ) )
-				deviceState.setText( "Device State: " + WebSocketService.deviceState );
+			if ( !deviceState.getText().toString().equals( SocketService.deviceState ) )
+				deviceState.setText( "Device State: " + SocketService.deviceState );
 			
-			if ( !uuid.getText().toString().equals( WebSocketService.deviceUUID ) )
-				uuid.setText( "Device UUID: " + WebSocketService.deviceUUID );
+			if ( !uuid.getText().toString().equals( SocketService.deviceUUID ) )
+				uuid.setText( "Device UUID: " + SocketService.deviceUUID );
 			
 			if ( !titlev.getText().toString().equals( sharedPrefs.getString( "title", "Apple Bloom Rewards" ) ) )
 			{
