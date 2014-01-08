@@ -5,12 +5,10 @@ import org.json.JSONException;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
@@ -21,7 +19,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.text.Editable;
@@ -43,6 +40,7 @@ import co.applebloom.apps.scanner.ScannerActivity;
 import com.chiorichan.android.JSONObj;
 import com.chiorichan.android.MyLittleDB;
 import com.chiorichan.android.SplashView;
+import com.chiorichan.apps.rewards.NetworkHandler;
 import com.chiorichan.net.CommonUtils;
 import com.chiorichan.net.SocketService;
 import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
@@ -64,12 +62,13 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	private TextView titlev, address, version, uuid, phone, deviceState;
 	private boolean continueAllowed = false;
 	private ImageButton scan, back;
-	public SocketService s;
 	
 	private static final String TAG = "ABRewards";
 	private static LaunchActivity instance;
 	private static ImageView headerImage;
 	private static Context context;
+	
+	private static NetworkHandler tcpHandler = new NetworkHandler();
 	
 	@Override
 	public void onCreate( final Bundle savedInstanceState )
@@ -159,12 +158,12 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		{
 			PackageInfo pInfo = getPackageManager().getPackageInfo( getPackageName(), 0 );
 			appVersion = pInfo.versionName;
-			version.setText( "Apple Bloom Rewards Version " + LaunchActivity.appVersion );
+			version.setText( "Apple Bloom Rewards Version " + appVersion );
 		}
 		catch ( Exception e )
 		{
 			e.printStackTrace();
-			sendException( e );
+			//sendException( e );
 		}
 		
 		uuid.setText( "Device UUID: " + SocketService.deviceUUID );
@@ -174,12 +173,10 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		titlev.setText( sharedPrefs.getString( "title", "Apple Bloom Rewards" ) );
 		address.setText( sharedPrefs.getString( "address1", "" ) + ", " + sharedPrefs.getString( "address2", "" ) );
 		
-		Intent intent = new Intent( this, SocketService.class );
-		startService( intent );
-		bindService( intent, mConnection, Context.BIND_AUTO_CREATE );
+		tcpHandler.execute();
 		
-		new updateUI().execute();
-		//new ScreenReceiver();
+		//new updateUI().execute();
+		new ScreenReceiver();
 	}
 	
 	public static String getPrefString( String key )
@@ -202,28 +199,6 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		return sharedPrefs.getBoolean( key, dft );
 	}
 	
-	/**
-	 * Send a thrown exception to the Apple Bloom Websocket
-	 * 
-	 * @param e
-	 */
-	public static void sendException( Exception e )
-	{
-		getInstance().s.sendException( e );
-	}
-	
-	public static SocketService getSocketService()
-	{
-		try
-		{
-			return LaunchActivity.getInstance().s;
-		}
-		catch ( Exception e )
-		{
-			return null;
-		}
-	}
-	
 	public static void startPushLink( String DeviceUUID )
 	{
 		PushLink.start( getAppContext(), R.drawable.ic_launcher, "3vcnlaneunf3k0k0", DeviceUUID );
@@ -238,19 +213,6 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		fps.setUpdateButton( "Update Now" );
 		fps.setReminderTimeInSeconds( 60 * 15 );
 	}
-	
-	private ServiceConnection mConnection = new ServiceConnection()
-	{
-		public void onServiceConnected( ComponentName className, IBinder binder )
-		{
-			s = ( (SocketService.MyBinder) binder ).getService();
-		}
-		
-		public void onServiceDisconnected( ComponentName className )
-		{
-			s = null;
-		}
-	};
 	
 	public void applyHeaderImage( String filename )
 	{
@@ -419,8 +381,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			}
 			finally
 			{
-				if ( s != null )
-					s.sendMessageSync( "ACCT " + jsn.toString() );
+				//s.sendMessageSync( "ACCT " + jsn.toString() );
 			}
 			
 			intent.putExtra( "com.applebloom.apps.message", msg );
@@ -543,6 +504,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		}
 	}
 	
+	/*
 	public class updateUI extends AsyncTask<Void, String, Void>
 	{
 		@Override
@@ -575,6 +537,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			while ( true );
 		}
 	}
+	*/
 	
 	private class ScreenReceiver extends BroadcastReceiver
 	{

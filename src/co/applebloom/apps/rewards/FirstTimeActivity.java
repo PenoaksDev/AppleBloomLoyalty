@@ -146,7 +146,7 @@ public class FirstTimeActivity extends TimedActivity implements OnClickListener,
 			
 			if ( b.isChecked() )
 			{
-				LaunchActivity.getInstance().s.sendMessageSync( "TXT " + phoneNumber );
+				//LaunchActivity.getInstance().s.sendMessageSync( "TXT " + phoneNumber );
 			}
 			
 			SQLiteDatabase db = LaunchActivity.myLittleDB.getWritableDatabase();

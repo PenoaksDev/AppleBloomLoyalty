@@ -106,13 +106,13 @@
             android:name="co.applebloom.apps.rewards.AdminActivity"
             android:label="@string/title_activity_admin" >
         </activity>
-
+<!-- 
         <service
             android:name="com.chiorichan.net.SocketService"
             android:enabled="true"
             android:icon="@drawable/ic_launcher"
             android:label="@string/app_name" />
-
+ -->
         <receiver android:name="SystemReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />

@@ -1,40 +1,28 @@
 package com.chiorichan.net;
 
 import static com.chiorichan.net.SocketService.TAG;
-
-import java.util.UUID;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.content.SharedPreferences;
-import android.provider.Settings;
 import android.util.Log;
-import android.widget.Toast;
-import co.applebloom.apps.rewards.LaunchActivity;
 
-import com.chiorichan.net.packet.CommandPacket;
+import com.chiorichan.apps.rewards.NetworkHandler;
 
-public class ConnectionHandler extends TcpConnection
+public class ConnectionHandler extends ConnectionReceiver
 {
 	@Override
-	public void onConnect()
+	public void onConnect( TcpClient parm )
 	{
-		Log.d( TAG, "Status: Connected to " + getRemoteAddressTCP() );
-		
-		SocketService.register( true );
-		
-		Toast.makeText( LaunchActivity.getAppContext(), "Successfully made a TCP Connection! YOUR GOLDEN!!! :D", Toast.LENGTH_SHORT ).show();
+		Log.d( TAG, "Status: Connected" );
+		//Toast.makeText( LaunchActivity.getAppContext(), "Successfully made a TCP Connection! YOUR GOLDEN!!! :D", Toast.LENGTH_SHORT ).show();
+		//SocketService.register( true );
 	}
 	
 	@Override
-	public void onIdle()
+	public void onIdle( TcpClient tcpClient )
 	{
 		
 	}
 	
 	@Override
-	public void onDisconnect()
+	public void onDisconnect( TcpClient tcpClient )
 	{
 		Log.d( TAG, "Connection lost." );
 		
@@ -43,8 +31,12 @@ public class ConnectionHandler extends TcpConnection
 	}
 	
 	@Override
-	public boolean onReceived( Packet var1 )
+	public boolean onReceived( TcpClient tcpClient, Packet var1 )
 	{
+		NetworkHandler.qPacket( var1 );
+		return true;
+		
+		/*
 		if ( var1 instanceof CommandPacket )
 		{
 			CommandPacket packet = ( (CommandPacket) var1 );
@@ -175,5 +167,6 @@ public class ConnectionHandler extends TcpConnection
 		}
 		
 		return false;
+		*/
 	}
 }

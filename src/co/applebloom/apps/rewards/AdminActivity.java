@@ -83,7 +83,7 @@ public class AdminActivity extends Activity
 			{
 				try
 				{
-					LaunchActivity.getInstance().s.sendMessageSync( "TXT " + input.getText() );
+					//LaunchActivity.getInstance().s.sendMessageSync( "TXT " + input.getText() );
 				}
 				catch ( Exception e ) { e.printStackTrace(); }
 			}
@@ -149,7 +149,7 @@ public class AdminActivity extends Activity
 			}
 			catch ( NullPointerException e )
 			{
-				LaunchActivity.sendException( e );
+				//LaunchActivity.sendException( e );
 			}
 		}
 		

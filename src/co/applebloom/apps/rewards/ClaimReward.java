@@ -130,8 +130,8 @@ public class ClaimReward extends Activity implements OnClickListener
 				}
 				finally
 				{
-					if ( LaunchActivity.getSocketService() != null )
-						LaunchActivity.getSocketService().sendMessageSync( "ACCT " + jsn.toString() );
+					//if ( LaunchActivity.getSocketService() != null )
+						//LaunchActivity.getSocketService().sendMessageSync( "ACCT " + jsn.toString() );
 				}
 			}
 			else
@@ -154,7 +154,7 @@ public class ClaimReward extends Activity implements OnClickListener
 		catch ( Exception e )
 		{
 			e.printStackTrace();
-			LaunchActivity.sendException( e );
+			//LaunchActivity.sendException( e );
 		}
 	}
 	

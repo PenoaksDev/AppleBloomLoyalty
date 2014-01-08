@@ -31,52 +31,18 @@ public class SocketHandler
 	
 	public static Long lastData = 0L;
 	private TcpClient mConnection;
-	private Handler handler = new Handler();
 	
 	public SocketHandler()
 	{
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy( policy );
-		
-		connectionThread();
-	}
-	
-	public void connectionThread()
-	{
-		class TestThreading extends AsyncTask<Void, String, Void>
-		{
-			@Override
-			protected void onProgressUpdate( String... values )
-			{
-				
-			}
-			
-			int cnt = 0;
-			
-			@Override
-			protected Void doInBackground( Void... noparams )
-			{
-				do
-				{
-					cnt++;
-					
-					Log.i( TAG, "I LOVE YOU!!! " + cnt );
-					
-					//publishProgress( null );
-					SystemClock.sleep( 1000 );
-				}
-				while ( true );
-			}
-		}
-		
-		new TestThreading().execute();
 	}
 	
 	public Boolean connectionCheck() throws UnknownHostException, IOException
 	{
 		
 		if ( mConnection == null )
-			mConnection = new TcpClient( InetAddress.getByName( SERVER_URL ), SERVER_PORT, ConnectionHandler.class );
+			mConnection = new TcpClient( InetAddress.getByName( SERVER_URL ), SERVER_PORT, new ConnectionHandler() );
 		
 		if ( mConnection != null && mConnection.isConnected() )
 			return true;
