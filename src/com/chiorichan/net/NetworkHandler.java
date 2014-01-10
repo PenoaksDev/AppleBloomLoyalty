@@ -13,6 +13,7 @@ import co.applebloom.apps.rewards.LaunchActivity;
 
 import com.chiorichan.apps.rewards.packet.ConfigurationPacket;
 import com.chiorichan.apps.rewards.packet.DeviceInformationPacket;
+import com.chiorichan.apps.rewards.packet.LookupContactPacket;
 import com.chiorichan.apps.rewards.packet.RegistrationPacket;
 import com.chiorichan.apps.rewards.packet.UUIDRequestPacket;
 import com.chiorichan.apps.rewards.packet.UpdatePacket;
@@ -72,6 +73,7 @@ public class NetworkHandler extends AsyncTask<Void, String, Void>
 					mConnection.registerPacket( UpdatePacket.class );
 					mConnection.registerPacket( UUIDRequestPacket.class );
 					mConnection.registerPacket( DeviceInformationPacket.class );
+					mConnection.registerPacket( LookupContactPacket.class );
 				}
 				else if ( !mConnection.isConnected() )
 					mConnection.attemptConnection( InetAddress.getByName( SERVER_URL ), SERVER_PORT );
@@ -110,6 +112,10 @@ public class NetworkHandler extends AsyncTask<Void, String, Void>
 							DeviceInformationPacket var = ( (DeviceInformationPacket) packet.getValue() );
 							LaunchActivity.getConfigHandler().pushChanges( var.saveToYaml() );
 							LaunchActivity.uiNeedsUpdating = true;
+						}
+						else if ( packet.getValue() instanceof LookupContactPacket )
+						{
+							LaunchActivity.serverResult = ( (LookupContactPacket) packet.getValue() );
 						}
 						
 						pendingPackets.remove( packet.getKey() );
@@ -232,7 +238,7 @@ public class NetworkHandler extends AsyncTask<Void, String, Void>
 		else
 			return "Disconnected!";
 	}
-
+	
 	public boolean isConnected()
 	{
 		return mConnection.isConnected();

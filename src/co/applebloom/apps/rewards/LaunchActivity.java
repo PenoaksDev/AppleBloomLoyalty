@@ -45,8 +45,10 @@ import com.chiorichan.android.JSONObj;
 import com.chiorichan.android.MyLittleDB;
 import com.chiorichan.android.SplashView;
 import com.chiorichan.apps.rewards.ConfigHandler;
+import com.chiorichan.apps.rewards.Contact;
 import com.chiorichan.apps.rewards.PostProcessing;
 import com.chiorichan.apps.rewards.PostProcessing.ActionList;
+import com.chiorichan.apps.rewards.packet.LookupContactPacket;
 import com.chiorichan.configuration.file.YamlConfiguration;
 import com.chiorichan.net.CommonUtils;
 import com.chiorichan.net.NetworkHandler;
@@ -80,6 +82,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	private static ConfigHandler configHandler;
 	private static List<String> cookingToast = new ArrayList<String>();
 	private int updateUIInterval = 1000; // Every second until app loads.
+	public static LookupContactPacket serverResult;
 	
 	public static boolean uiNeedsUpdating = true;
 	
@@ -278,24 +281,8 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			
 			if ( continueAllowed )
 			{
-				goTask task = new goTask( this, s );
-				
-				task.execute();
-				
-				String result = task.getResult(); // processNumber( s );
-				
-				if ( result == null )
-				{
-					new AlertDialog.Builder( this ).setMessage( "Sorry, We could not process your request at this time. Please try again later." ).setPositiveButton( "Ok", null ).show();
-				}
-				else if ( result.equalsIgnoreCase( "success" ) || result.equalsIgnoreCase( "firstTime" ) )
-				{
-					phone.setText( "" );
-				}
-				else
-				{
-					new AlertDialog.Builder( this ).setMessage( result ).setPositiveButton( "Ok", null ).show();
-				}
+				new goTask( this, s ).execute();
+				phone.setText( "" );
 			}
 			else
 			{
@@ -309,7 +296,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	class goTask extends AsyncTask<Void, Void, String>
 	{
 		Context context;
-		String phoneNumber, resultString;
+		String phoneNumber;
 		ProgressDialog mDialog;
 		
 		goTask(Context context, String phone)
@@ -331,43 +318,92 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		@Override
 		protected String doInBackground( Void... params )
 		{
+			// Does this phone number use valid US formatting rules?
 			if ( !CommonUtils.isNumeric( phoneNumber ) )
 				return "It seems there is a problem with the Phone Number you provided. Try again.";
 			
+			// Check #2 - Phone numbers can not start with a 0
 			if ( phoneNumber.startsWith( "0" ) )
 				return "According to the US Phone Number formatting rules, You do not exist.\nSo, I'm sorry but I will have to disallow the use of this number.";
 			
+			// Check #3 - Is the customer trying to use a fictional phone number from a movie?
 			if ( phoneNumber.startsWith( "555" ) )
-				return "What do you think this is, a movie?\nPlease enter your real mobile number.";
+				return "We're Sorry, We can not provide service to fictional people at this time.\n\nHasta la vista, baby!";
 			
+			// Check #4 - Is the customer trying to use a number that is known too be fake but is also used all too frequently?
 			if ( phoneNumber == "1231231234" || phoneNumber == "0000000000" || phoneNumber == "1234567890" )
-				return "Sorry, The number you entered has been blacklisted.";
+				return "We're Sorry, The number you entered has been blacklisted.";
 			
+			// Check #5 - Is the customer trying to use our service number?
 			if ( phoneNumber == "7085296564" )
-				return "Sorry, Being the service provider it would not be right of us to earn points. So please don't use our phone number.";
+				return "We're Sorry, Being the service provider it would not be right of us to earn points. So please don't use our phone number.";
 			
-			// If we are currently active with the server. Attempt to get up to date information about this customer.
+			LookupContactPacket serverResult = null;
+			
+			// If we are currently active with the server. Attempt to get up to date information about this contact.
 			if ( LaunchActivity.getTcpHandler().isConnected() && LaunchActivity.getTcpHandler().isRegistered() )
 			{
-				// Allow up to 10 seconds for the server to respond.
 				long timeout = System.currentTimeMillis() + 10000;
 				boolean done = false;
+				String requestId = Common.md5( System.currentTimeMillis() + "JUST A SECURITY MEASURE!!!" );
+				
+				// Void any previous results
+				LaunchActivity.serverResult = null;
 				
 				// Send the packet
-				//LaunchActivity.getTcpHandler().sendPacket( new LookupPacket( phoneNumber ) );
+				LaunchActivity.getTcpHandler().sendPacket( new LookupContactPacket( phoneNumber, requestId ) );
 				
 				do
 				{
-					if ( false ) // Scan for the result
+					// Check if the packet has been returned from the server.
+					if ( LaunchActivity.serverResult != null && LaunchActivity.serverResult.getId().equals( requestId ) )
+					{
+						serverResult = LaunchActivity.serverResult;
 						done = true;
+					}
 					
+					// Allow up to 10 seconds for the server to respond.
 					if ( timeout > System.currentTimeMillis() )
 						done = true;
 					
+					// Sleep duh! 100 milliseconds
 					SystemClock.sleep( 100 );
 				}
-				while ( done );
+				while ( !done );
 			}
+			
+			// Pull the contact information from the YAML datastore.
+			Contact contact;
+			Object obj = LaunchActivity.getConfigHandler().getConfig().get( "contacts." + phone );
+			
+			if ( obj instanceof Contact )
+			{
+				// Success - Cast it for reading
+				contact = (Contact) obj;
+			}
+			else
+			{
+				// Failure - Create a new one
+				contact = new Contact( phoneNumber, "", 0, 0 );
+			}
+			
+			// Check if the earlier request for contact information was successful
+			if ( serverResult != null && serverResult.getContact() != null )
+			{
+				Contact serverContact = serverResult.getContact();
+				
+				// Has the customer used their account elsewhere more recently?
+				if ( serverContact.last_check > contact.last_check )
+				{
+					contact.last_check = serverContact.last_check;
+					contact.bal = serverContact.bal;
+				}
+			}
+			
+			// Save the known data
+			LaunchActivity.getConfigHandler().getConfig().set( "contacts." + phone, contact );
+			
+			// TO BE CONTINUED
 			
 			return null;
 		}
@@ -377,14 +413,26 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		{
 			super.onPostExecute( result );
 			
-			resultString = result;
+			if ( result == null )
+			{
+				new AlertDialog.Builder( context ).setMessage( "Sorry, We could not process your request at this time. Please try again later." ).setPositiveButton( "Ok", null ).show();
+			}
+			else if ( result.equalsIgnoreCase( "success" ) )
+			{	
+				
+			}
+			else if ( result.equalsIgnoreCase( "firstTime" ) )
+			{
+				Intent intent = new Intent( getApplicationContext(), FirstTimeActivity.class );
+				intent.putExtra( "com.applebloom.apps.phoneNumber", phoneNumber );
+				startActivity( intent );
+			}
+			else
+			{
+				new AlertDialog.Builder( context ).setMessage( result ).setPositiveButton( "Ok", null ).show();
+			}
 			
 			mDialog.dismiss();
-		}
-		
-		public String getResult()
-		{
-			return resultString;
 		}
 		
 		public String processNumber( String phoneNumber )
@@ -430,9 +478,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			}
 			else
 			{
-				Intent intent = new Intent( getApplicationContext(), FirstTimeActivity.class );
-				intent.putExtra( "com.applebloom.apps.phoneNumber", phoneNumber );
-				startActivity( intent );
+				
 				return "firstTime";
 			}
 			

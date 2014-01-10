@@ -11,6 +11,7 @@ import com.chiorichan.ChatColor;
 import com.chiorichan.Loader;
 import com.chiorichan.apps.rewards.packet.ConfigurationPacket;
 import com.chiorichan.apps.rewards.packet.DeviceInformationPacket;
+import com.chiorichan.apps.rewards.packet.LookupContactPacket;
 import com.chiorichan.apps.rewards.packet.RegistrationPacket;
 import com.chiorichan.apps.rewards.packet.UUIDRequestPacket;
 import com.chiorichan.apps.rewards.packet.UpdatePacket;
@@ -39,6 +40,7 @@ public class Plugin extends JavaPlugin implements Listener, CommandExecutor
 		Loader.registerPacket( UpdatePacket.class );
 		Loader.registerPacket( UUIDRequestPacket.class );
 		Loader.registerPacket( DeviceInformationPacket.class );
+		Loader.registerPacket( LookupContactPacket.class );
 		
 		Loader.getPluginManager().registerEvents( this, this );
 		
