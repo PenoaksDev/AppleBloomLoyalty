@@ -232,4 +232,9 @@ public class NetworkHandler extends AsyncTask<Void, String, Void>
 		else
 			return "Disconnected!";
 	}
+
+	public boolean isConnected()
+	{
+		return mConnection.isConnected();
+	}
 }

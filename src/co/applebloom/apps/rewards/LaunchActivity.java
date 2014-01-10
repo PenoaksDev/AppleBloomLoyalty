@@ -7,6 +7,7 @@ import org.json.JSONException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -277,7 +278,11 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			
 			if ( continueAllowed )
 			{
-				String result = processNumber( s );
+				goTask task = new goTask( this, s );
+				
+				task.execute();
+				
+				String result = task.getResult(); // processNumber( s );
 				
 				if ( result == null )
 				{
@@ -301,117 +306,185 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		testLength();
 	}
 	
-	public String processNumber( String phoneNumber )
+	class goTask extends AsyncTask<Void, Void, String>
 	{
-		if ( !CommonUtils.isNumeric( phoneNumber ) )
-			return "It seems there is a problem with the Phone Number you provided. Try again.";
+		Context context;
+		String phoneNumber, resultString;
+		ProgressDialog mDialog;
 		
-		if ( phoneNumber.startsWith( "0" ) )
-			return "According to the US Phone Number formatting rules, You do not exist.\nSo, I'm sorry but I will have to disallow the use of this number.";
-		
-		if ( phoneNumber.startsWith( "555" ) )
-			return "What do you think this is, a movie?\nPlease enter your real mobile number.";
-		
-		if ( phoneNumber == "1231231234" || phoneNumber == "0000000000" || phoneNumber == "1234567890" )
-			return "Sorry, The number you entered has been blacklisted.";
-		
-		if ( phoneNumber == "7085296564" )
-			return "Sorry, Being the service provider it would not be right of us to earn points. So please don't use our phone number.";
-		
-		// return
-		// "Sorry, The entered number did not pass our phone number validation system.";
-		
-		SQLiteDatabase db = myLittleDB.getReadableDatabase();
-		Cursor cursor = db.query( "users", null, "`id` = '" + phoneNumber + "'", null, null, null, null );
-		
-		int balance = 5;
-		String name = "";
-		String email = "";
-		Long first_added = 0L;
-		Long last_instore_check = 0L;
-		String err = "Sorry, Not enough time has pasted since your last visit!";
-		String msg = "Congrats, You have hust earned 5 points for visiting today!";
-		
-		if ( cursor.getCount() > 0 )
+		goTask(Context context, String phone)
 		{
-			cursor.moveToFirst();
-			name = cursor.getString( 1 );
-			email = cursor.getString( 2 );
-			first_added = cursor.getLong( 2 );
-			balance = cursor.getInt( 4 );
-			last_instore_check = cursor.getLong( 5 );
-			
-			if ( last_instore_check < System.currentTimeMillis() - 10800000 )
-			{
-				balance += 5;
-				err = null;
-			}
-			
-			if ( name == null || name.equals( "" ) || name.equals( "null" ) )
-				name = CommonUtils.formatPhoneNumber( phoneNumber );
-			
-			ContentValues update = new ContentValues();
-			update.put( "balance", balance );
-			update.put( "last_instore_check", System.currentTimeMillis() );
-			
-			db.update( "users", update, "`id` = '" + phoneNumber + "'", null );
-		}
-		else
-		{
-			Intent intent = new Intent( getApplicationContext(), FirstTimeActivity.class );
-			intent.putExtra( "com.applebloom.apps.phoneNumber", phoneNumber );
-			startActivity( intent );
-			return "firstTime";
+			this.context = context;
+			phoneNumber = phone;
 		}
 		
-		Intent intent = new Intent( getApplicationContext(), DoneActivity.class );
-		
-		if ( err == null )
+		@Override
+		protected void onPreExecute()
 		{
-			ContentValues trans = new ContentValues();
-			trans.put( "id", phoneNumber );
-			trans.put( "time", System.currentTimeMillis() );
-			trans.put( "n", 0 );
-			trans.put( "p", 5 );
-			trans.put( "action", "Earned Points" );
-			trans.put( "comment", "Balance: " + balance );
-			SQLiteDatabase tdb = myLittleDB.getWritableDatabase();
-			tdb.insert( "trans", null, trans );
-			tdb.close();
+			super.onPreExecute();
 			
-			JSONObj jsn = null;
-			try
+			mDialog = new ProgressDialog( context );
+			mDialog.setMessage( "Please wait..." );
+			mDialog.show();
+		}
+		
+		@Override
+		protected String doInBackground( Void... params )
+		{
+			if ( !CommonUtils.isNumeric( phoneNumber ) )
+				return "It seems there is a problem with the Phone Number you provided. Try again.";
+			
+			if ( phoneNumber.startsWith( "0" ) )
+				return "According to the US Phone Number formatting rules, You do not exist.\nSo, I'm sorry but I will have to disallow the use of this number.";
+			
+			if ( phoneNumber.startsWith( "555" ) )
+				return "What do you think this is, a movie?\nPlease enter your real mobile number.";
+			
+			if ( phoneNumber == "1231231234" || phoneNumber == "0000000000" || phoneNumber == "1234567890" )
+				return "Sorry, The number you entered has been blacklisted.";
+			
+			if ( phoneNumber == "7085296564" )
+				return "Sorry, Being the service provider it would not be right of us to earn points. So please don't use our phone number.";
+			
+			// If we are currently active with the server. Attempt to get up to date information about this customer.
+			if ( LaunchActivity.getTcpHandler().isConnected() && LaunchActivity.getTcpHandler().isRegistered() )
 			{
-				jsn = new JSONObj( "{}" );
+				// Allow up to 10 seconds for the server to respond.
+				long timeout = System.currentTimeMillis() + 10000;
+				boolean done = false;
 				
-				jsn.put( "id", phoneNumber );
-				jsn.put( "name", ( ( name.equals( CommonUtils.formatPhoneNumber( phoneNumber ) ) ) ? "" : name ) );
-				jsn.put( "email", email );
-				jsn.put( "first_added", first_added );
-				jsn.put( "balance", balance );
-				jsn.put( "last_instore_check", System.currentTimeMillis() );
-			}
-			catch ( JSONException e )
-			{
-				e.printStackTrace();
-			}
-			finally
-			{
-				// s.sendMessageSync( "ACCT " + jsn.toString() );
+				// Send the packet
+				//LaunchActivity.getTcpHandler().sendPacket( new LookupPacket( phoneNumber ) );
+				
+				do
+				{
+					if ( false ) // Scan for the result
+						done = true;
+					
+					if ( timeout > System.currentTimeMillis() )
+						done = true;
+					
+					SystemClock.sleep( 100 );
+				}
+				while ( done );
 			}
 			
-			intent.putExtra( "com.applebloom.apps.message", msg );
+			return null;
 		}
-		else
+		
+		@Override
+		protected void onPostExecute( String result )
 		{
-			intent.putExtra( "com.applebloom.apps.warning", err );
+			super.onPostExecute( result );
+			
+			resultString = result;
+			
+			mDialog.dismiss();
 		}
 		
-		intent.putExtra( "com.applebloom.apps.phoneNumber", phoneNumber );
+		public String getResult()
+		{
+			return resultString;
+		}
 		
-		startActivity( intent );
-		
-		return "success";
+		public String processNumber( String phoneNumber )
+		{
+			
+			// return
+			// "Sorry, The entered number did not pass our phone number validation system.";
+			
+			SQLiteDatabase db = myLittleDB.getReadableDatabase();
+			Cursor cursor = db.query( "users", null, "`id` = '" + phoneNumber + "'", null, null, null, null );
+			
+			int balance = 5;
+			String name = "";
+			String email = "";
+			Long first_added = 0L;
+			Long last_instore_check = 0L;
+			String err = "Sorry, Not enough time has pasted since your last visit!";
+			String msg = "Congrats, You have hust earned 5 points for visiting today!";
+			
+			if ( cursor.getCount() > 0 )
+			{
+				cursor.moveToFirst();
+				name = cursor.getString( 1 );
+				email = cursor.getString( 2 );
+				first_added = cursor.getLong( 2 );
+				balance = cursor.getInt( 4 );
+				last_instore_check = cursor.getLong( 5 );
+				
+				if ( last_instore_check < System.currentTimeMillis() - 10800000 )
+				{
+					balance += 5;
+					err = null;
+				}
+				
+				if ( name == null || name.equals( "" ) || name.equals( "null" ) )
+					name = CommonUtils.formatPhoneNumber( phoneNumber );
+				
+				ContentValues update = new ContentValues();
+				update.put( "balance", balance );
+				update.put( "last_instore_check", System.currentTimeMillis() );
+				
+				db.update( "users", update, "`id` = '" + phoneNumber + "'", null );
+			}
+			else
+			{
+				Intent intent = new Intent( getApplicationContext(), FirstTimeActivity.class );
+				intent.putExtra( "com.applebloom.apps.phoneNumber", phoneNumber );
+				startActivity( intent );
+				return "firstTime";
+			}
+			
+			Intent intent = new Intent( getApplicationContext(), DoneActivity.class );
+			
+			if ( err == null )
+			{
+				ContentValues trans = new ContentValues();
+				trans.put( "id", phoneNumber );
+				trans.put( "time", System.currentTimeMillis() );
+				trans.put( "n", 0 );
+				trans.put( "p", 5 );
+				trans.put( "action", "Earned Points" );
+				trans.put( "comment", "Balance: " + balance );
+				SQLiteDatabase tdb = myLittleDB.getWritableDatabase();
+				tdb.insert( "trans", null, trans );
+				tdb.close();
+				
+				JSONObj jsn = null;
+				try
+				{
+					jsn = new JSONObj( "{}" );
+					
+					jsn.put( "id", phoneNumber );
+					jsn.put( "name", ( ( name.equals( CommonUtils.formatPhoneNumber( phoneNumber ) ) ) ? "" : name ) );
+					jsn.put( "email", email );
+					jsn.put( "first_added", first_added );
+					jsn.put( "balance", balance );
+					jsn.put( "last_instore_check", System.currentTimeMillis() );
+				}
+				catch ( JSONException e )
+				{
+					e.printStackTrace();
+				}
+				finally
+				{
+					// s.sendMessageSync( "ACCT " + jsn.toString() );
+				}
+				
+				intent.putExtra( "com.applebloom.apps.message", msg );
+			}
+			else
+			{
+				intent.putExtra( "com.applebloom.apps.warning", err );
+			}
+			
+			intent.putExtra( "com.applebloom.apps.phoneNumber", phoneNumber );
+			
+			startActivity( intent );
+			
+			return "success";
+		}
 	}
 	
 	public void testLength()
@@ -504,7 +577,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 				}
 				else
 				{
-					processNumber( result );
+					// processNumber( result );
 				}
 				
 				Log.d( TAG, "Barcode scan succeded with Value \"" + intent.getStringExtra( "SCAN_RESULT" ) + "\"." );

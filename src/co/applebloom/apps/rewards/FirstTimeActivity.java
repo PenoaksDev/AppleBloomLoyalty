@@ -177,7 +177,7 @@ public class FirstTimeActivity extends TimedActivity implements OnClickListener,
 			db.insert( "users", "id", insert );
 			db.close();
 			
-			LaunchActivity.getInstance().processNumber( phoneNumber );
+			//LaunchActivity.getInstance().processNumber( phoneNumber );
 			finish();
 		}
 		else if ( v == cancel )
