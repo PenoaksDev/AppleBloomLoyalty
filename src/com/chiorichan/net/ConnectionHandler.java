@@ -3,8 +3,6 @@ package com.chiorichan.net;
 import static com.chiorichan.net.SocketService.TAG;
 import android.util.Log;
 
-import com.chiorichan.apps.rewards.NetworkHandler;
-
 public class ConnectionHandler extends ConnectionReceiver
 {
 	@Override

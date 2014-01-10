@@ -1,5 +1,8 @@
 package co.applebloom.apps.rewards;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.json.JSONException;
 
 import android.app.Activity;
@@ -40,9 +43,13 @@ import co.applebloom.apps.scanner.ScannerActivity;
 import com.chiorichan.android.JSONObj;
 import com.chiorichan.android.MyLittleDB;
 import com.chiorichan.android.SplashView;
-import com.chiorichan.apps.rewards.NetworkHandler;
+import com.chiorichan.apps.rewards.ConfigHandler;
+import com.chiorichan.apps.rewards.PostProcessing;
+import com.chiorichan.apps.rewards.PostProcessing.ActionList;
+import com.chiorichan.configuration.file.YamlConfiguration;
 import com.chiorichan.net.CommonUtils;
-import com.chiorichan.net.SocketService;
+import com.chiorichan.net.NetworkHandler;
+import com.chiorichan.util.Common;
 import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 import com.pushlink.android.FriendlyPopUpStrategy;
 import com.pushlink.android.PushLink;
@@ -59,7 +66,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	
 	private Button go;
 	private Handler uiThreadHandler = new Handler();
-	private TextView titlev, address, version, uuid, phone, deviceState;
+	protected TextView titlev, address, version, phone, deviceState;
 	private boolean continueAllowed = false;
 	private ImageButton scan, back;
 	
@@ -69,6 +76,11 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	private static Context context;
 	
 	private static NetworkHandler tcpHandler = new NetworkHandler();
+	private static ConfigHandler configHandler;
+	private static List<String> cookingToast = new ArrayList<String>();
+	private int updateUIInterval = 1000; // Every second until app loads.
+	
+	public static boolean uiNeedsUpdating = true;
 	
 	@Override
 	public void onCreate( final Bundle savedInstanceState )
@@ -110,6 +122,17 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		} );
 		
 		this.setContentView( splashView );
+		
+		configHandler = new ConfigHandler();
+		
+		tcpHandler.execute();
+		
+		new updateUI().execute();
+		new ScreenReceiver();
+		
+		YamlConfiguration config = configHandler.getConfig();
+		
+		tcpHandler.setUUID( config.getString( "device.uuid", "{unregistered}" ) );
 	}
 	
 	public void launchMainView( LaunchActivity mainThis, Bundle savedInstanceState )
@@ -120,7 +143,6 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		
 		headerImage = (ImageView) findViewById( R.id.headerImage );
 		
-		uuid = (TextView) findViewById( R.id.uuid );
 		address = (TextView) findViewById( R.id.address );
 		titlev = (TextView) findViewById( R.id.title );
 		version = (TextView) findViewById( R.id.version );
@@ -163,20 +185,11 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		catch ( Exception e )
 		{
 			e.printStackTrace();
-			//sendException( e );
+			// sendException( e );
 		}
 		
-		uuid.setText( "Device UUID: " + SocketService.deviceUUID );
-		deviceState.setText( "Device State: " + SocketService.deviceState );
-		
-		applyHeaderImage( sharedPrefs.getString( "img", null ) );
-		titlev.setText( sharedPrefs.getString( "title", "Apple Bloom Rewards" ) );
-		address.setText( sharedPrefs.getString( "address1", "" ) + ", " + sharedPrefs.getString( "address2", "" ) );
-		
-		tcpHandler.execute();
-		
-		//new updateUI().execute();
-		new ScreenReceiver();
+		// Update to every 10 seconds because the app is now loaded.
+		updateUIInterval = 10000;
 	}
 	
 	public static String getPrefString( String key )
@@ -204,7 +217,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		PushLink.start( getAppContext(), R.drawable.ic_launcher, "3vcnlaneunf3k0k0", DeviceUUID );
 		
 		PushLink.setCurrentStrategy( StrategyEnum.FRIENDLY_POPUP );
-		PushLink.addMetadata( "App Version", appVersion );
+		PushLink.addMetadata( "Version", appVersion );
 		PushLink.addMetadata( "Android Version", Build.VERSION.RELEASE );
 		
 		FriendlyPopUpStrategy fps = (FriendlyPopUpStrategy) PushLink.getCurrentStrategy();
@@ -216,6 +229,9 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 	
 	public void applyHeaderImage( String filename )
 	{
+		if ( headerImage == null )
+			return;
+		
 		if ( filename == null || filename == "" )
 		{
 			// It seems that no image was available. Set it do that system default.
@@ -381,7 +397,7 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			}
 			finally
 			{
-				//s.sendMessageSync( "ACCT " + jsn.toString() );
+				// s.sendMessageSync( "ACCT " + jsn.toString() );
 			}
 			
 			intent.putExtra( "com.applebloom.apps.message", msg );
@@ -504,25 +520,40 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		}
 	}
 	
-	/*
-	public class updateUI extends AsyncTask<Void, String, Void>
+	public class updateUI extends AsyncTask<Void, PostProcessing, Void>
 	{
+		String lastState = "";
+		
 		@Override
-		protected void onProgressUpdate( String... values )
+		protected void onProgressUpdate( PostProcessing... values )
 		{
-			if ( !deviceState.getText().toString().equals( SocketService.deviceState ) )
-				deviceState.setText( "Device State: " + SocketService.deviceState );
-			
-			if ( !uuid.getText().toString().equals( SocketService.deviceUUID ) )
-				uuid.setText( "Device UUID: " + SocketService.deviceUUID );
-			
-			if ( !titlev.getText().toString().equals( sharedPrefs.getString( "title", "Apple Bloom Rewards" ) ) )
+			try
 			{
-				applyHeaderImage( sharedPrefs.getString( "img", null ) );
-				titlev.setText( sharedPrefs.getString( "title", "Apple Bloom Rewards" ) );
-				address.setText( sharedPrefs.getString( "address1", "" ) + ", " + sharedPrefs.getString( "address2", "" ) );
-				
-				Toast.makeText( LaunchActivity.context, "The UI has been updated! :D", Toast.LENGTH_LONG ).show();
+				for ( PostProcessing p : values )
+				{
+					if ( p.action == ActionList.TOAST )
+					{
+						Toast.makeText( getApplicationContext(), p.payload, Toast.LENGTH_LONG ).show();
+					}
+					else if ( p.action == ActionList.UPDATEUI )
+					{
+						YamlConfiguration conf = configHandler.getConfig();
+						
+						applyHeaderImage( conf.getString( "device.img", null ) );
+						titlev.setText( conf.getString( "device.title", "Bloomin' Rewards" ) );
+						address.setText( conf.getString( "device.address1", "" ) + ", " + conf.getString( "device.address2", "" ) );
+						
+						deviceState.setText( getStateString() );
+						Toast.makeText( LaunchActivity.context, "The UI has been updated!", Toast.LENGTH_LONG ).show();
+						
+						uiNeedsUpdating = false;
+						lastState = Common.md5( getStateString() );
+					}
+				}
+			}
+			catch ( Exception e )
+			{
+				Log.w( TAG, "Exception Thrown in the UI Updater: " + e.getMessage() );
 			}
 		}
 		
@@ -531,13 +562,25 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 		{
 			do
 			{
-				publishProgress( null );
-				SystemClock.sleep( 5000 );
+				for ( String s : cookingToast )
+				{
+					publishProgress( new PostProcessing( ActionList.TOAST, s ) );
+					cookingToast.remove( s );
+				}
+				
+				if ( uiNeedsUpdating || !lastState.equals( Common.md5( getStateString() ) ) )
+					publishProgress( new PostProcessing( ActionList.UPDATEUI, null ) );
+				
+				SystemClock.sleep( updateUIInterval );
 			}
 			while ( true );
 		}
+		
+		protected String getStateString()
+		{
+			return "State: " + tcpHandler.getDeviceState() + "  Network: " + tcpHandler.getNetworkState() + "  UUID: " + tcpHandler.getUUID();
+		}
 	}
-	*/
 	
 	private class ScreenReceiver extends BroadcastReceiver
 	{
@@ -568,5 +611,20 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 				Log.w( TAG, "Screen has been turned on." );
 			}
 		}
+	}
+	
+	public static ConfigHandler getConfigHandler()
+	{
+		return configHandler;
+	}
+	
+	public static void cookToast( String msg )
+	{
+		cookingToast.add( msg );
+	}
+	
+	public static NetworkHandler getTcpHandler()
+	{
+		return tcpHandler;
 	}
 }

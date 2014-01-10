@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
@@ -18,7 +17,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.chiorichan.apps.rewards.packet.UUIDRequestPacket;
 import com.chiorichan.net.CommonUtils;
 import com.chiorichan.net.SocketService;
 
@@ -72,6 +73,13 @@ public class AdminActivity extends Activity
 		new logCatReader().execute();
 	}
 	
+	public void saveChanges( View v )
+	{
+		
+		
+		
+	}
+	
 	public void sendWelcomeSMS( View v )
 	{
 		final EditText input = new EditText( this );
@@ -83,9 +91,12 @@ public class AdminActivity extends Activity
 			{
 				try
 				{
-					//LaunchActivity.getInstance().s.sendMessageSync( "TXT " + input.getText() );
+					// LaunchActivity.getInstance().s.sendMessageSync( "TXT " + input.getText() );
 				}
-				catch ( Exception e ) { e.printStackTrace(); }
+				catch ( Exception e )
+				{
+					e.printStackTrace();
+				}
 			}
 		} ).setNegativeButton( "Cancel", new DialogInterface.OnClickListener()
 		{
@@ -113,12 +124,8 @@ public class AdminActivity extends Activity
 	
 	public void requestNewClick( View v )
 	{
-		SharedPreferences.Editor editor = LaunchActivity.sharedPrefs.edit();
-		editor.putString( "uuid", null );
-		editor.commit();
-		
-		SocketService.deviceUUID = null;
-		SocketService.register( true );
+		LaunchActivity.getTcpHandler().sendPacket( new UUIDRequestPacket( LaunchActivity.getTcpHandler().getUUID() ) );
+		Toast.makeText( getApplicationContext(), "Dispatched a UUID Request Packet. :D", Toast.LENGTH_LONG ).show();
 	}
 	
 	public class logCatReader extends AsyncTask<Void, String, Void>
@@ -139,17 +146,13 @@ public class AdminActivity extends Activity
 			
 			tv.setText( str );
 			
-			String uuid = SocketService.deviceUUID;
-			String state = SocketService.deviceState;
-			
 			try
 			{
-				( (TextView) findViewById( R.id.uuid ) ).setText( "Device UUID: " + ( ( uuid == null || uuid == "" ) ? "{NULL?}" : uuid ) );
-				( (TextView) findViewById( R.id.msg ) ).setText( "Device State: " + ( ( state == null || state == "" ) ? "{NULL?}" : state ) );
+				( (TextView) findViewById( R.id.msg ) ).setText( LaunchActivity.getInstance().deviceState.getText() );
 			}
 			catch ( NullPointerException e )
 			{
-				//LaunchActivity.sendException( e );
+				// LaunchActivity.sendException( e );
 			}
 		}
 		
@@ -158,18 +161,30 @@ public class AdminActivity extends Activity
 		{
 			try
 			{
+				publishProgress( "" );
+				
 				Process process = Runtime.getRuntime().exec( "logcat" );
 				BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( process.getInputStream() ) );
 				
 				String line;
+				long rate = System.currentTimeMillis();
+				boolean startDelay = true;
 				while ( ( line = bufferedReader.readLine() ) != null )
 				{
-					publishProgress( line );
+					if ( startDelay )
+					{
+						if ( rate < System.currentTimeMillis() - 250 )
+							startDelay = false;
+						
+						rate = System.currentTimeMillis();
+					}
+					else
+						publishProgress( line );
 				}
 			}
 			catch ( IOException e )
 			{
-				//LaunchActivity.sendException( e );
+				// LaunchActivity.sendException( e );
 			}
 			
 			return null;

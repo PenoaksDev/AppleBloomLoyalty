@@ -21,7 +21,7 @@
         android:textSize="30sp"
         android:textStyle="bold" />
 
-	        <TextView
+    <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -29,50 +29,51 @@
         android:text="@string/enterEmail"
         android:textColor="#43666E"
         android:textSize="22sp"
-        android:textStyle="bold" />
-	    
-	    <LinearLayout
-          android:layout_width="wrap_content"
-          android:layout_height="80dp"
-          android:background="@drawable/new_button_blue" >
+        android:textStyle="bold" >
 
-          <ImageView
-              android:id="@+id/imageView1"
-              android:layout_width="80dp"
-              android:layout_height="match_parent"
-              android:background="#000"
-              android:padding="5dp"
-              android:contentDescription="@string/emailDescription"
-              android:inputType="textEmailAddress"
-              android:src="@drawable/email" />
+        <requestFocus />
+    </TextView>
 
-          <EditText
-              android:id="@+id/email"
-              android:layout_width="0dip"
-              android:layout_height="match_parent"
-              android:layout_weight="2"
-              android:ems="10"
-              android:inputType="textEmailAddress"
-              android:maxLength="255"
-              android:background="@null"
-              android:textColor="#fff"
-              android:paddingLeft="8dp"
-              android:paddingRight="8dp"
-              android:textSize="50sp" >
-              
-	        
-          </EditText>
-      </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="80dp"
+        android:background="@drawable/new_button_blue" >
 
-	    <TextView
-	        android:id="@+id/textView2"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_marginTop="25dp"
-	        android:textColor="#43666E"
-	        android:textSize="30sp"
-	        android:text="100% Free, No Junkmail, Unsubscribe anytime." />
-    
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:background="#000"
+            android:contentDescription="@string/emailDescription"
+            android:inputType="textEmailAddress"
+            android:padding="5dp"
+            android:src="@drawable/email" />
+
+        <EditText
+            android:id="@+id/email"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:background="@null"
+            android:ems="10"
+            android:inputType="textEmailAddress"
+            android:maxLength="255"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:textColor="#fff"
+            android:textSize="50sp" >
+        </EditText>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:text="100% Free, No Junkmail, Unsubscribe anytime."
+        android:textColor="#43666E"
+        android:textSize="30sp" />
+
     <CheckBox
         android:id="@+id/text"
         android:layout_width="wrap_content"
@@ -118,9 +119,8 @@
             android:text="Skip E-Mail"
             android:textColor="#fff"
             android:textSize="24sp" />
-
     </LinearLayout>
-    
+
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
