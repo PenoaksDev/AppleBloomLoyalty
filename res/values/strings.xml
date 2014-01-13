@@ -7,6 +7,11 @@
     <dimen name="button_height">90dp</dimen>
     <dimen name="border_spacing">15dp</dimen>
 
+    <string name="result_success">Congrats, You have hust earned 5 points for visiting today!</string>
+    <string name="result_time">Sorry, Not enough time has pasted since your last visit!</string>
+    
+    <string name="default_points">5</string>
+    
     <string name="button0">0</string>
     <string name="button1">1</string>
     <string name="button2">2</string>

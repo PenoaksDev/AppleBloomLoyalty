@@ -405,6 +405,11 @@ public class LaunchActivity extends Activity implements OnClickListener, OnLongC
 			
 			// TO BE CONTINUED
 			
+			String msg = res.getString( R.string.result_success );
+			String err = res.getString( R.string.result_time );
+			
+			int points = res.getInteger( R.string.default_points );
+			
 			return null;
 		}
 		
